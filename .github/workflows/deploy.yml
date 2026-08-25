@@ -50,7 +50,7 @@ jobs:
         with:
           path: dist
 
-  veröffentlichen:
+  deploy:
     needs: bauen
     runs-on: ubuntu-latest
     environment:
