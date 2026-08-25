@@ -1,18 +1,34 @@
-/* Design-Grundwerte an einer Stelle.
-   Farben, Abstände und Schrift nur hier ändern - alle Komponenten greifen darauf zu. */
+/* Gestaltungs-Grundwerte an einer Stelle.
+   Leitbild: ein gedruckter Konzeptbogen. Heller Papierton, Serifenschrift für
+   Überschriften, feine Linien statt Kacheln, genau eine Akzentfarbe.
+   Wer die Anmutung ändern will, ändert hier – nicht in den Komponenten. */
 :root {
-  --farbe-grund: #0f1218;
-  --farbe-flaeche: #171c25;
-  --farbe-rand: #2a3140;
-  --farbe-text: #e8ecf3;
-  --farbe-text-leise: #97a1b3;
-  --farbe-akzent: #c8a24a;
-  --farbe-akzent-text: #1a1206;
+  color-scheme: light;
 
-  --radius: 12px;
-  --abstand-klein: 8px;
-  --abstand: 16px;
-  --abstand-gross: 32px;
+  /* Papier und Tinte */
+  --papier: #fbf9f4;          /* Grundfläche */
+  --papier-tief: #f4f0e6;     /* abgesetzte Bereiche */
+  --tinte: #1c1a17;           /* Fließtext und Überschriften */
+  --tinte-leise: #6d665a;     /* Zweitrangiges, Erläuterungen */
+  --tinte-fein: #9a9284;      /* Kolumnentitel, Randnotizen */
 
-  --schrift: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Linien - das tragende Gestaltungsmittel statt Rahmen und Schatten */
+  --linie: #ddd5c5;
+  --linie-kraeftig: #1c1a17;
+
+  /* Genau ein Akzent, sparsam eingesetzt: Rubrikfarbe wie im Magazin */
+  --akzent: #8c2f26;
+  --akzent-hell: #f0e2df;
+
+  /* Schrift */
+  --serif: 'Source Serif 4', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+  --grotesk: 'Source Sans 3', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  /* Maße */
+  --spalte: 44rem;            /* Lesebreite des Textteils */
+  --satz: 68rem;              /* Gesamtbreite des Satzspiegels */
+  --luft-eng: 8px;
+  --luft: 16px;
+  --luft-weit: 32px;
+  --luft-sehr-weit: 64px;
 }

@@ -1,140 +1,262 @@
-/* Grundlayout des Kontrollzentrums. Bewusst schlank gehalten -
-   erst wenn die Features stehen, lohnt sich Feinschliff. */
+/* Satzspiegel und Auszeichnungen des Konzeptbogens.
+   Gestaltungsregeln, an die sich alles hier hält:
+   - Linien tragen die Gliederung, nicht Rahmen, Schatten oder Farbflächen
+   - genau eine Akzentfarbe, sparsam
+   - keine runden Ecken außer am Eingabefeld
+   - Überschriften Serif, alles Funktionale Grotesk */
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: var(--schrift);
-  background: var(--farbe-grund);
-  color: var(--farbe-text);
-  line-height: 1.55;
+  background: var(--papier);
+  color: var(--tinte);
+  font-family: var(--grotesk);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
-.app {
-  max-width: 1100px;
+.blatt {
+  max-width: var(--satz);
   margin: 0 auto;
-  padding: var(--abstand-gross) var(--abstand);
+  padding: var(--luft-weit) var(--luft-weit) var(--luft-sehr-weit);
 }
 
-.app__inhalt {
-  display: grid;
-  gap: var(--abstand-gross);
+/* ---------- Kopf ---------- */
+
+/* Kolumnentitel: schmale Zeile ganz oben, zwischen zwei Linien. */
+.kolumnentitel {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: var(--luft-eng);
+  border-bottom: 1px solid var(--linie-kraeftig);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tinte-fein);
 }
 
-.app__fuss {
-  margin-top: var(--abstand-gross);
-  padding-top: var(--abstand);
-  border-top: 1px solid var(--farbe-rand);
-  color: var(--farbe-text-leise);
-  font-size: 0.85rem;
+.kopf__titel {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(2.6rem, 6vw, 4.2rem);
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  margin: var(--luft-weit) 0 0;
+  max-width: 16ch;
 }
 
-/* --- Kopfzeile --- */
-.kopfzeile { margin-bottom: var(--abstand-gross); }
-.kopfzeile__titel {
-  margin: 0;
-  font-size: 2rem;
-  letter-spacing: -0.02em;
-}
-.kopfzeile__unterzeile {
-  margin: var(--abstand-klein) 0 0;
-  color: var(--farbe-text-leise);
-  max-width: 60ch;
+.kopf__vorspann {
+  font-family: var(--serif);
+  font-size: 1.22rem;
+  line-height: 1.5;
+  color: var(--tinte-leise);
+  max-width: 46ch;
+  margin: var(--luft) 0 var(--luft-sehr-weit);
 }
 
-/* --- Karten (wiederverwendbar) --- */
-.karte {
-  background: var(--farbe-flaeche);
-  border: 1px solid var(--farbe-rand);
-  border-radius: var(--radius);
-  padding: var(--abstand-gross);
-}
-.karte__titel { margin: 0 0 var(--abstand-klein); font-size: 1.15rem; }
-.karte__hinweis { margin: 0 0 var(--abstand); color: var(--farbe-text-leise); }
-.karte__fussnote {
-  margin: var(--abstand-klein) 0 0;
-  font-size: 0.8rem;
-  color: var(--farbe-text-leise);
+/* ---------- Abschnitte ---------- */
+
+.abschnitt {
+  padding-top: var(--luft-weit);
+  border-top: 1px solid var(--linie);
+  margin-bottom: var(--luft-sehr-weit);
 }
 
-/* --- Ideeformular --- */
-.ideeformular__feld {
+.abschnitt__titel {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 1.9rem;
+  line-height: 1.2;
+  margin: 0 0 var(--luft-eng);
+}
+
+/* Rubrikzeile über der Überschrift - die einzige Stelle mit Akzentfarbe. */
+.abschnitt__marke {
+  display: block;
+  font-family: var(--grotesk);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--akzent);
+  margin-bottom: var(--luft-eng);
+}
+
+.abschnitt__vorspann {
+  color: var(--tinte-leise);
+  max-width: var(--spalte);
+  margin: 0 0 var(--luft-weit);
+}
+
+/* ---------- Eingabefeld ---------- */
+
+.feld {
+  display: block;
   width: 100%;
-  padding: var(--abstand);
-  border-radius: var(--radius);
-  border: 1px solid var(--farbe-rand);
-  background: var(--farbe-grund);
-  color: var(--farbe-text);
-  font: inherit;
+  max-width: var(--spalte);
+  padding: var(--luft);
+  background: #fff;
+  border: 1px solid var(--linie);
+  border-radius: 2px;
+  color: var(--tinte);
+  font-family: var(--serif);
+  font-size: 1.05rem;
+  line-height: 1.6;
   resize: vertical;
 }
-.ideeformular__feld:disabled { opacity: 0.6; }
+.feld::placeholder { color: var(--tinte-fein); }
+.feld:focus { outline: 2px solid var(--akzent); outline-offset: 1px; }
+.feld:disabled { background: var(--papier-tief); }
+
+.feld__fuss {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--luft);
+  margin-top: var(--luft);
+  max-width: var(--spalte);
+}
 
 .knopf {
-  border: none;
-  border-radius: var(--radius);
-  background: var(--farbe-akzent);
-  color: var(--farbe-akzent-text);
-  font: inherit;
+  padding: 11px 22px;
+  border: 1px solid var(--linie-kraeftig);
+  border-radius: 2px;
+  background: var(--tinte);
+  color: var(--papier);
+  font-family: var(--grotesk);
+  font-size: 0.95rem;
   font-weight: 600;
+  letter-spacing: 0.02em;
   cursor: pointer;
 }
-.knopf--gross { margin-top: var(--abstand); padding: 12px 24px; }
-.knopf:disabled { opacity: 0.45; cursor: not-allowed; }
-
-/* --- Agentenleiste --- */
-.agentenleiste__liste {
-  list-style: none;
-  margin: var(--abstand) 0 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: var(--abstand);
+.knopf:hover:not(:disabled) { background: var(--akzent); border-color: var(--akzent); }
+.knopf:disabled {
+  background: transparent;
+  color: var(--tinte-fein);
+  border-color: var(--linie);
+  cursor: not-allowed;
 }
 
-.agentkarte {
-  background: var(--farbe-flaeche);
-  border: 1px solid var(--farbe-rand);
-  border-radius: var(--radius);
-  padding: var(--abstand);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.agentkarte__kopf {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.agentkarte__symbol { font-size: 1.3rem; }
-.agentkarte__nummer { font-size: 0.75rem; color: var(--farbe-text-leise); }
-.agentkarte__name { margin: 0; font-size: 1rem; }
-.agentkarte__aufgabe {
-  margin: 0;
+.randnotiz {
   font-size: 0.85rem;
-  color: var(--farbe-text-leise);
-  flex: 1;
-}
-.agentkarte__status {
-  align-self: flex-start;
-  font-size: 0.75rem;
-  padding: 2px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--farbe-rand);
-  color: var(--farbe-text-leise);
+  color: var(--tinte-fein);
+  font-style: italic;
 }
 
-/* Statusfarben - greifen, sobald die Ablaufsteuerung sie setzt. */
-.agentkarte--läuft { border-color: var(--farbe-akzent); }
-.agentkarte--fertig .agentkarte__status { color: #7dd3a0; }
-.agentkarte--fehler { border-color: #b4544f; }
+/* ---------- Die acht Kapitel ---------- */
 
-/* --- Ergebnis --- */
-.ergebnis__leer {
-  border: 1px dashed var(--farbe-rand);
-  border-radius: var(--radius);
-  padding: var(--abstand-gross);
+.kapitelliste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--linie);
+}
+
+/* Eine Zeile je Fachkraft: Ziffer | Text | Stand.
+   Die Trennlinien machen die Gliederung, nicht Kästen. */
+.kapitel {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr auto;
+  align-items: baseline;
+  gap: var(--luft);
+  padding: var(--luft) 0;
+  border-bottom: 1px solid var(--linie);
+}
+
+.kapitel__ziffer {
+  font-family: var(--serif);
+  font-size: 1.35rem;
+  color: var(--tinte-fein);
+  font-variant-numeric: oldstyle-nums;
+}
+
+.kapitel__name {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.15rem;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--luft-eng);
+}
+
+/* Schlagwort hinter dem Namen, wie eine Marginalie. */
+.kapitel__kurz {
+  font-family: var(--grotesk);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tinte-fein);
+}
+
+.kapitel__aufgabe {
+  margin: 4px 0 0;
+  color: var(--tinte-leise);
+  max-width: 58ch;
+}
+
+.kapitel__stand {
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tinte-fein);
+  white-space: nowrap;
+}
+
+/* Stände - greifen, sobald die Ablaufsteuerung sie setzt. */
+.kapitel--laeuft { background: var(--akzent-hell); }
+.kapitel--laeuft .kapitel__ziffer,
+.kapitel--laeuft .kapitel__stand { color: var(--akzent); }
+.kapitel--fertig .kapitel__ziffer { color: var(--tinte); }
+.kapitel--fehler .kapitel__stand { color: var(--akzent); }
+
+/* ---------- Ergebnis ---------- */
+
+.leerseite {
+  border-top: 1px solid var(--linie);
+  border-bottom: 1px solid var(--linie);
+  padding: var(--luft-sehr-weit) var(--luft);
   text-align: center;
-  color: var(--farbe-text-leise);
+}
+
+.leerseite__text {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-style: italic;
+  color: var(--tinte-fein);
+  line-height: 1.7;
+}
+
+/* ---------- Fuß ---------- */
+
+.fussleiste {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--luft);
+  padding-top: var(--luft);
+  border-top: 1px solid var(--linie-kraeftig);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tinte-fein);
+}
+
+/* ---------- Schmale Bildschirme ---------- */
+
+@media (max-width: 640px) {
+  .blatt { padding: var(--luft) var(--luft) var(--luft-weit); }
+
+  /* Ziffer und Stand rutschen in eine Zeile über den Text. */
+  .kapitel {
+    grid-template-columns: 2.5rem 1fr;
+  }
+  .kapitel__stand {
+    grid-column: 2;
+    justify-self: start;
+  }
 }

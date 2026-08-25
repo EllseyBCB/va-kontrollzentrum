@@ -1,8 +1,8 @@
-// Die Hauptkomponente. Sie setzt nur das Layout zusammen und hält
+// Die Hauptkomponente. Sie setzt nur den Satzspiegel zusammen und hält
 // (später) den gemeinsamen Zustand des Durchlaufs.
 //
-// Heute ist alles noch statisch: Formular ohne Funktion, Agentenkarten ohne
-// Ergebnisse. Das ist Absicht - erst das Gerüst, dann die Logik.
+// Heute ist alles noch statisch: Formular ohne Funktion, Kapitelliste ohne
+// Ergebnisse. Das ist Absicht – erst das Gerüst, dann die Logik.
 
 import Kopfzeile from './komponenten/Kopfzeile.jsx'
 import IdeeFormular from './komponenten/IdeeFormular.jsx'
@@ -11,22 +11,23 @@ import ErgebnisBereich from './komponenten/ErgebnisBereich.jsx'
 
 export default function App() {
   return (
-    <div className="app">
+    <div className="blatt">
       <Kopfzeile />
 
-      <main className="app__inhalt">
+      <main>
         {/* Schritt 1: Die Teilnehmerin gibt ihre Idee ein. */}
         <IdeeFormular />
 
-        {/* Schritt 2: Die 8 Agenten arbeiten sichtbar nacheinander. */}
+        {/* Schritt 2: Die acht Fachleute arbeiten sichtbar nacheinander. */}
         <AgentenLeiste />
 
-        {/* Schritt 3: Aus den Einzelergebnissen entsteht das Konzept. */}
+        {/* Schritt 3: Aus den Einzelbeiträgen entsteht das Konzept. */}
         <ErgebnisBereich />
       </main>
 
-      <footer className="app__fuss">
-        Grundgerüst v0.1 · noch ohne Agenten-Logik
+      <footer className="fussleiste">
+        <span>Konzeptbogen für Virtuelle Assistenz</span>
+        <span>Grundgerüst v0.1</span>
       </footer>
     </div>
   )

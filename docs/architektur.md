@@ -41,6 +41,27 @@ Ein API-Schlüssel im Browser ist öffentlich. Jeder Agentenaufruf läuft deshal
 | `public/` | Dateien, die unverändert ausgeliefert werden (Logo, Favicon). |
 | `docs/` | Diese Dokumentation. |
 
+## Gestaltung: der Konzeptbogen
+
+Die Seite ist bewusst **nicht** im üblichen KI-Look gehalten (dunkler Hintergrund,
+Emoji-Icons, gleichförmiges Kachelraster, Verläufe). Leitbild ist stattdessen ein
+gedruckter Konzeptbogen aus einem Fachheft.
+
+Vier Regeln, an die sich alles hält:
+
+1. **Linien statt Kästen.** Die Gliederung entsteht durch Haarlinien und Weißraum –
+   keine Schatten, keine Farbflächen, keine runden Ecken außer am Eingabefeld.
+2. **Genau eine Akzentfarbe** (gedecktes Rot, `--akzent`), sparsam für Rubrikzeilen.
+   Alles andere ist Papier und Tinte.
+3. **Serif für Inhalt, Grotesk für Funktion.** Überschriften, Vorspann und das
+   Eingabefeld in Source Serif; Beschriftungen, Stände und Knöpfe in Source Sans.
+4. **Ziffern statt Symbole.** Die acht Fachleute sind mit römischen Ziffern
+   durchnummeriert wie Kapitel – keine Emojis.
+
+Wer die Anmutung ändern will, fasst `src/stile/tokens.css` an, nicht die Komponenten.
+Die Schriften kommen von Google Fonts und fallen sauber auf Georgia bzw. die
+Systemschrift zurück, wenn kein Netz da ist.
+
 ## Was als Nächstes kommt
 
 1. Prompts für die 8 Agenten in `server/agenten/`

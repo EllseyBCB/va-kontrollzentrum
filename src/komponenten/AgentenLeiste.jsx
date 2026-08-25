@@ -1,28 +1,40 @@
-// Zeigt alle 8 Agenten als Kartenreihe - die eigentliche "Kontrollzentrum"-Ansicht.
+// Die acht Fachleute als durchnummerierte Liste – kein Kachelraster.
 //
-// Später bekommt jede Karte einen Status (wartet / läuft / fertig / fehler)
-// und lässt sich aufklappen, um das Ergebnis des Agenten zu lesen.
-// Heute stehen alle auf "wartet".
+// Jede Zeile ist ein Kapitel: römische Ziffer, Name, Aufgabe, Stand.
+// Später bekommt jede Zeile einen echten Status und lässt sich aufklappen,
+// um das Ergebnis zu lesen. Heute steht alles auf "offen".
 
-import { AGENTEN, STATUS } from '../daten/agenten.js'
+import { AGENTEN, STATUS, STATUS_TEXT } from '../daten/agenten.js'
 
 export default function AgentenLeiste() {
   return (
-    <section className="agentenleiste">
-      <h2 className="karte__titel">Die 8 Agenten</h2>
+    <section className="abschnitt">
+      <h2 className="abschnitt__titel">
+        <span className="abschnitt__marke">Zweiter Schritt</span>
+        Die acht Fachleute
+      </h2>
 
-      <ol className="agentenleiste__liste">
+      <p className="abschnitt__vorspann">
+        Sie arbeiten nacheinander. Jede und jeder liest, was die Vorherigen
+        geschrieben haben, und baut darauf auf.
+      </p>
+
+      <ol className="kapitelliste">
         {AGENTEN.map((agent) => (
-          <li key={agent.id} className={`agentkarte agentkarte--${STATUS.WARTET}`}>
-            <div className="agentkarte__kopf">
-              <span className="agentkarte__symbol" aria-hidden="true">
-                {agent.symbol}
-              </span>
-              <span className="agentkarte__nummer">Schritt {agent.nummer}</span>
+          <li key={agent.id} className={`kapitel kapitel--${STATUS.WARTET}`}>
+            <span className="kapitel__ziffer" aria-hidden="true">
+              {agent.ziffer}
+            </span>
+
+            <div className="kapitel__text">
+              <h3 className="kapitel__name">
+                {agent.name}
+                <span className="kapitel__kurz">{agent.kurz}</span>
+              </h3>
+              <p className="kapitel__aufgabe">{agent.aufgabe}</p>
             </div>
-            <h3 className="agentkarte__name">{agent.name}</h3>
-            <p className="agentkarte__aufgabe">{agent.aufgabe}</p>
-            <span className="agentkarte__status">wartet</span>
+
+            <span className="kapitel__stand">{STATUS_TEXT[STATUS.WARTET]}</span>
           </li>
         ))}
       </ol>

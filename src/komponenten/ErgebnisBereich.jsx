@@ -1,14 +1,21 @@
-// Hier entsteht später das fertige Konzept aus allen 8 Beiträgen -
+// Hier entsteht später das fertige Konzept aus allen acht Beiträgen –
 // lesbar am Bildschirm und als Download (z. B. Markdown oder PDF).
-// Heute nur der leere Platzhalter.
+// Heute nur die leere Seite, die darauf wartet, beschrieben zu werden.
 
 export default function ErgebnisBereich() {
   return (
-    <section className="karte ergebnis">
-      <h2 className="karte__titel">Dein Konzept</h2>
-      <div className="ergebnis__leer">
-        Sobald die Agenten gelaufen sind, steht hier dein fertiges
-        VA-Business-Konzept.
+    <section className="abschnitt">
+      <h2 className="abschnitt__titel">
+        <span className="abschnitt__marke">Ergebnis</span>
+        Dein Konzept
+      </h2>
+
+      <div className="leerseite">
+        <p className="leerseite__text">
+          Sobald die acht Fachleute gearbeitet haben,
+          <br />
+          steht dein Konzept an dieser Stelle.
+        </p>
       </div>
     </section>
   )
