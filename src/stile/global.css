@@ -1,0 +1,140 @@
+/* Grundlayout des Kontrollzentrums. Bewusst schlank gehalten -
+   erst wenn die Features stehen, lohnt sich Feinschliff. */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--schrift);
+  background: var(--farbe-grund);
+  color: var(--farbe-text);
+  line-height: 1.55;
+}
+
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--abstand-gross) var(--abstand);
+}
+
+.app__inhalt {
+  display: grid;
+  gap: var(--abstand-gross);
+}
+
+.app__fuss {
+  margin-top: var(--abstand-gross);
+  padding-top: var(--abstand);
+  border-top: 1px solid var(--farbe-rand);
+  color: var(--farbe-text-leise);
+  font-size: 0.85rem;
+}
+
+/* --- Kopfzeile --- */
+.kopfzeile { margin-bottom: var(--abstand-gross); }
+.kopfzeile__titel {
+  margin: 0;
+  font-size: 2rem;
+  letter-spacing: -0.02em;
+}
+.kopfzeile__unterzeile {
+  margin: var(--abstand-klein) 0 0;
+  color: var(--farbe-text-leise);
+  max-width: 60ch;
+}
+
+/* --- Karten (wiederverwendbar) --- */
+.karte {
+  background: var(--farbe-flaeche);
+  border: 1px solid var(--farbe-rand);
+  border-radius: var(--radius);
+  padding: var(--abstand-gross);
+}
+.karte__titel { margin: 0 0 var(--abstand-klein); font-size: 1.15rem; }
+.karte__hinweis { margin: 0 0 var(--abstand); color: var(--farbe-text-leise); }
+.karte__fussnote {
+  margin: var(--abstand-klein) 0 0;
+  font-size: 0.8rem;
+  color: var(--farbe-text-leise);
+}
+
+/* --- Ideeformular --- */
+.ideeformular__feld {
+  width: 100%;
+  padding: var(--abstand);
+  border-radius: var(--radius);
+  border: 1px solid var(--farbe-rand);
+  background: var(--farbe-grund);
+  color: var(--farbe-text);
+  font: inherit;
+  resize: vertical;
+}
+.ideeformular__feld:disabled { opacity: 0.6; }
+
+.knopf {
+  border: none;
+  border-radius: var(--radius);
+  background: var(--farbe-akzent);
+  color: var(--farbe-akzent-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.knopf--gross { margin-top: var(--abstand); padding: 12px 24px; }
+.knopf:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* --- Agentenleiste --- */
+.agentenleiste__liste {
+  list-style: none;
+  margin: var(--abstand) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--abstand);
+}
+
+.agentkarte {
+  background: var(--farbe-flaeche);
+  border: 1px solid var(--farbe-rand);
+  border-radius: var(--radius);
+  padding: var(--abstand);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.agentkarte__kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.agentkarte__symbol { font-size: 1.3rem; }
+.agentkarte__nummer { font-size: 0.75rem; color: var(--farbe-text-leise); }
+.agentkarte__name { margin: 0; font-size: 1rem; }
+.agentkarte__aufgabe {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--farbe-text-leise);
+  flex: 1;
+}
+.agentkarte__status {
+  align-self: flex-start;
+  font-size: 0.75rem;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--farbe-rand);
+  color: var(--farbe-text-leise);
+}
+
+/* Statusfarben - greifen, sobald die Ablaufsteuerung sie setzt. */
+.agentkarte--läuft { border-color: var(--farbe-akzent); }
+.agentkarte--fertig .agentkarte__status { color: #7dd3a0; }
+.agentkarte--fehler { border-color: #b4544f; }
+
+/* --- Ergebnis --- */
+.ergebnis__leer {
+  border: 1px dashed var(--farbe-rand);
+  border-radius: var(--radius);
+  padding: var(--abstand-gross);
+  text-align: center;
+  color: var(--farbe-text-leise);
+}

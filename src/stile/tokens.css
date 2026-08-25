@@ -1,0 +1,18 @@
+/* Design-Grundwerte an einer Stelle.
+   Farben, Abstände und Schrift nur hier ändern - alle Komponenten greifen darauf zu. */
+:root {
+  --farbe-grund: #0f1218;
+  --farbe-flaeche: #171c25;
+  --farbe-rand: #2a3140;
+  --farbe-text: #e8ecf3;
+  --farbe-text-leise: #97a1b3;
+  --farbe-akzent: #c8a24a;
+  --farbe-akzent-text: #1a1206;
+
+  --radius: 12px;
+  --abstand-klein: 8px;
+  --abstand: 16px;
+  --abstand-gross: 32px;
+
+  --schrift: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
