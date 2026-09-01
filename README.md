@@ -75,15 +75,47 @@ sie auch selbst. Zurückziehen löscht nichts: die Stelle ruht dann nur.
 Ein vollständiger Konzeptdurchlauf sind acht Aufrufe – mit `claude-opus-5` grob
 20 bis 60 Cent. Ein Vorschlag zu einem Einrichtungsschritt oder ein Auftrag im
 Betrieb ist deutlich kleiner. Wer viel ausprobiert, stellt in der `.env` auf
-`MODELL=claude-sonnet-5` um.
+`MODELL=claude-sonnet-5` um – für die veröffentlichte Fassung steht dasselbe in
+`wrangler.toml`.
 
 ## Die veröffentlichte Fassung
 
-<https://ellseybcb.github.io/va-kontrollzentrum/> zeigt die Oberfläche.
-GitHub Pages liefert reine Dateien aus und kann keinen Server ausführen – die
-Agenten arbeiten dort nicht. Einrichten von Hand, lesen und sichern geht
-trotzdem, der Speicher liegt im Browser. Damit die Agenten auch dort arbeiten,
-bräuchte es eine Funktion bei Cloudflare oder Vercel.
+<https://ellseybcb.github.io/va-kontrollzentrum/> zeigt die Oberfläche. GitHub
+Pages liefert reine Dateien aus und kann nichts ausführen – die vier Endpunkte
+laufen deshalb als **Cloudflare Worker** daneben (`worker/index.js`).
+
+Der Unterschied, auf den es dort ankommt:
+
+| | lokal | im Netz |
+|---|---|---|
+| API | `server/index.js` (Node) | Cloudflare Worker |
+| Schlüssel | liegt in der `.env` | bringt jede/r selbst mit |
+
+Der Worker hält **keinen** Schlüssel. Täte er es, könnte jeder, der die Adresse
+kennt, Agenten auf fremde Rechnung laufen lassen. Stattdessen fragt die Seite
+oben nach einem eigenen Schlüssel, behält ihn im Browser und schickt ihn pro
+Aufruf mit. Voreingestellt ist er weg, sobald der Tab zugeht; „merken" legt ihn
+dauerhaft ab. Lesen, Einrichten von Hand und Sichern gehen ganz ohne.
+
+Wer die Agenten wirklich arbeiten lassen will, ist mit der Fassung auf dem
+eigenen Rechner besser bedient – dort sieht der Browser den Schlüssel nie.
+
+### Den Worker veröffentlichen
+
+```bash
+npx wrangler login       # einmalig
+npm run worker:deploy
+```
+
+Wrangler nennt danach die Adresse. Die gehört – mit `/api` am Ende – bei GitHub
+unter **Settings → Secrets and variables → Actions → Variables** als
+`VITE_API_BASIS` hinterlegt. Beim nächsten Push baut der Workflow die Oberfläche
+damit. Ohne diese Variable entsteht wie früher eine Seite ohne erreichbare API.
+
+Zum Ausprobieren läuft der Worker auch lokal: `npm run worker:dev`.
+
+Eine eigene Domain kommt in `wrangler.toml` unter `ERLAUBTE_URSPRUENGE` dazu –
+sonst weist der Worker sie ab.
 
 ## Wo liegt was?
 

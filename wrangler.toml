@@ -1,0 +1,33 @@
+# Cloudflare-Worker: die API der veröffentlichten Fassung.
+#
+# Die Oberfläche liegt weiterhin auf GitHub Pages (siehe .github/workflows/deploy.yml).
+# Nur die vier Endpunkte laufen hier - Pages kann nichts ausführen.
+#
+# Veröffentlichen:
+#   npx wrangler login        einmalig
+#   npm run worker:deploy
+#
+# Danach nennt wrangler die Adresse. Die gehört als Variable VITE_API_BASIS in
+# die Repository-Einstellungen bei GitHub (Settings -> Secrets and variables ->
+# Actions -> Variables), mit "/api" am Ende. Ohne sie sucht die gebaute
+# Oberfläche die API weiter unter "/api" auf dem eigenen Rechner.
+#
+# Hier steht bewusst KEIN Schlüssel und es gibt kein Secret dazu: Der Worker
+# arbeitet nur mit dem Schlüssel, den die Besucherin selbst mitschickt.
+
+name = "va-kontrollzentrum-api"
+main = "worker/index.js"
+compatibility_date = "2026-09-01"
+
+# Kein Wildcard-Ursprung: Der Browser dürfte den Schlüssel-Kopf sonst gar nicht
+# erst mitschicken. Die GitHub-Pages-Adresse und localhost stehen fest im Code
+# (worker/index.js); hier lassen sich weitere ergänzen, kommagetrennt - etwa
+# eine eigene Domain.
+[vars]
+MODELL = "claude-opus-5"
+ERLAUBTE_URSPRUENGE = ""
+
+# Protokolle in der Cloudflare-Oberfläche. Hilfreich, wenn etwas klemmt - der
+# Worker schreibt bewusst nichts aus den Anfragen hinein.
+[observability]
+enabled = true

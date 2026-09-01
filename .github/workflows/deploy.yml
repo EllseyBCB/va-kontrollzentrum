@@ -28,12 +28,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Quellcode holen
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Node einrichten
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
 
       - name: Abhängigkeiten installieren
@@ -41,12 +41,19 @@ jobs:
 
       - name: Oberfläche bauen
         run: npm run build
+        env:
+          # Adresse des Cloudflare-Workers, mit "/api" am Ende. Sie steht unter
+          # Settings -> Secrets and variables -> Actions -> Variables und ist
+          # bewusst eine Variable, kein Secret: Sie steht ohnehin im gebauten
+          # JavaScript und ist nichts Geheimes. Fehlt sie, wird wie bisher eine
+          # Oberfläche ohne erreichbare API gebaut.
+          VITE_API_BASIS: ${{ vars.VITE_API_BASIS }}
 
       - name: Pages vorbereiten
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Ergebnis hochladen
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: dist
 
@@ -59,4 +66,4 @@ jobs:
     steps:
       - name: Auf Pages schalten
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

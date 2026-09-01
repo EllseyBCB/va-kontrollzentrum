@@ -6,9 +6,10 @@
 // Und sie entscheidet, welcher der drei Bereiche gerade zu sehen ist. Mehr
 // nicht: Gearbeitet wird in den Haken, angezeigt in den Komponenten.
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import Kopfzeile from './komponenten/Kopfzeile.jsx'
 import Navigation from './komponenten/Navigation.jsx'
+import Zugang from './komponenten/Zugang.jsx'
 import IdeeFormular from './komponenten/IdeeFormular.jsx'
 import AgentenLeiste from './komponenten/AgentenLeiste.jsx'
 import ErgebnisBereich from './komponenten/ErgebnisBereich.jsx'
@@ -19,6 +20,7 @@ import { AGENTEN, agentNach } from './daten/agenten.js'
 import { useFirma } from './zustand/useFirma.js'
 import { useDurchlauf } from './zustand/useDurchlauf.js'
 import { pruefeVerbindung } from './dienste/api.js'
+import { holeSchluessel, beobachte } from './dienste/schluessel.js'
 
 export default function App() {
   const firma = useFirma()
@@ -55,16 +57,38 @@ export default function App() {
     }
   }, [])
 
+  // Der eigene Schlüssel - nur in der veröffentlichten Fassung überhaupt gefragt.
+  const eigenerSchluessel = useSyncExternalStore(beobachte, holeSchluessel, () => '')
+
   const serverWeg = serverStand?.status === 'weg'
-  const schluesselFehlt = serverWeg || serverStand?.schluesselHinterlegt === false
-  // Erst wenn geprüft UND beides in Ordnung ist, dürfen Knöpfe drücken.
+  // Zwei Fassungen, zwei Herkünfte des Schlüssels:
+  //   lokal   liegt er in der .env  -> "schluesselHinterlegt" sagt, ob er da ist
+  //   Worker  bringt ihn die Besucherin mit -> "schluesselNoetig" ist gesetzt
+  const schluesselNoetig = serverStand?.schluesselNoetig === true
+  const schluesselFehlt =
+    serverWeg ||
+    serverStand?.schluesselHinterlegt === false ||
+    (schluesselNoetig && !eigenerSchluessel)
+  // Erst wenn geprüft UND alles in Ordnung ist, dürfen Knöpfe drücken.
   const serverBereit = serverStand !== null && !schluesselFehlt
 
-  // Auf GitHub Pages gibt es keinen Server - dort ist die Seite eine Vorschau.
-  // Der Hinweis muss deshalb beides abdecken und steht in jedem Bereich.
+  // Warum die Knöpfe aus sind - in einem Satz, hier zusammengestellt. Die
+  // Bausteine zeigen ihn nur noch an: Sie sollen nicht wissen müssen, ob sie
+  // lokal laufen oder im Netz, sonst steht in der veröffentlichten Fassung ein
+  // Rat, den dort niemand befolgen kann ("trag ihn in die .env ein").
+  const apiHinweis = serverWeg
+    ? 'Dafür muss eine API erreichbar sein – auf dem eigenen Rechner über npm run dev.'
+    : schluesselNoetig && !eigenerSchluessel
+      ? 'Dafür fehlt noch dein Anthropic-Schlüssel – trag ihn oben ein.'
+      : serverStand?.schluesselHinterlegt === false
+        ? 'Es ist noch kein API-Schlüssel hinterlegt – trag ihn in die Datei .env ein und starte den Server neu.'
+        : null
+
+  // Wenn gar keine API erreichbar ist, bleibt die Seite eine Vorschau. Der
+  // Hinweis steht in jedem Bereich, damit niemand vergeblich klickt.
   const hinweis = serverWeg ? (
     <p className="warnleiste">
-      Hier ist kein Server erreichbar, deshalb können die Agenten gerade nicht
+      Hier ist keine API erreichbar, deshalb können die Agenten gerade nicht
       arbeiten. Einrichten, lesen und sichern geht trotzdem – alles bleibt in
       diesem Browser gespeichert. Zum Arbeiten die Fassung auf dem eigenen
       Rechner starten: <code>npm run dev</code>.
@@ -101,6 +125,9 @@ export default function App() {
         scharfeAnzahl={firma.scharfeAnzahl}
       />
 
+      {/* Nur in der veröffentlichten Fassung: dort hält die API keinen Schlüssel. */}
+      {schluesselNoetig && <Zugang />}
+
       <main>
         {/* ------------------------------------------------- Gründungsakte */}
         {reiter === 'konzept' && (
@@ -116,6 +143,7 @@ export default function App() {
               zuruecksetzen={durchlauf.zuruecksetzen}
               fertigeAnzahl={durchlauf.fertigeAnzahl}
               schluesselFehlt={schluesselFehlt}
+              apiHinweis={apiHinweis}
             />
 
             <AgentenLeiste
@@ -144,6 +172,7 @@ export default function App() {
               zurueck={() => setStelleInArbeit(null)}
               naechsteStelle={naechsteOffene(stelleInArbeit)}
               serverBereit={serverBereit}
+              apiHinweis={apiHinweis}
             />
           ) : (
             <Belegschaft firma={firma} einrichten={einrichten} hinweis={hinweis} />
@@ -157,6 +186,7 @@ export default function App() {
               firma={firma}
               zurBelegschaft={() => setReiter('belegschaft')}
               serverBereit={serverBereit}
+              apiHinweis={apiHinweis}
             />
           </>
         )}

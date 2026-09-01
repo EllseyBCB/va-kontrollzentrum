@@ -1,13 +1,37 @@
-// Einziger Draht vom Browser zum Server.
+// Einziger Draht vom Browser zur API.
 //
-// Alle Aufrufe gehen über "/api/..." und werden von Vite an den Node-Server
-// weitergereicht (siehe vite.config.js). Der Browser kennt den API-Schlüssel nie.
+// Es gibt sie an zwei Orten, und diese Datei ist die einzige, die das merkt:
 //
-// Wenn später der Anbieter oder die Endpunkte wechseln, ändert sich nur diese Datei.
+//   lokal            "/api/..."  - Vite reicht an den Node-Server weiter
+//                                  (siehe vite.config.js). Der Schlüssel liegt
+//                                  dort in der .env, der Browser sieht ihn nie.
+//   veröffentlicht   VITE_API_BASIS zeigt auf den Cloudflare-Worker. Der hält
+//                                  keinen Schlüssel - deshalb geht der der
+//                                  Besucherin bei jedem Aufruf mit.
+//
+// Wenn später der Anbieter oder die Endpunkte wechseln, ändert sich nur hier etwas.
 
-const BASIS = '/api'
+import { holeSchluessel } from './schluessel.js'
 
-// Kleiner Verbindungstest. Sagt auch, ob überhaupt ein Schlüssel hinterlegt ist.
+// Wird beim Bauen eingesetzt (siehe .github/workflows/deploy.yml). Fehlt die
+// Variable, bleibt es beim lokalen Weg über den Vite-Proxy.
+const BASIS = (import.meta.env.VITE_API_BASIS || '/api').replace(/\/+$/, '')
+
+// Der Schlüssel der Besucherin reist in diesem Feld - passend zum Worker.
+const SCHLUESSEL_FELD = 'X-Anthropic-Key'
+
+// Kopfzeilen für einen Aufruf. Ohne eigenen Schlüssel bleibt das Feld weg;
+// lokal ist das der Normalfall.
+function koepfe(weitere = {}) {
+  const schluessel = holeSchluessel()
+  return {
+    ...weitere,
+    ...(schluessel ? { [SCHLUESSEL_FELD]: schluessel } : {}),
+  }
+}
+
+// Kleiner Verbindungstest. Sagt auch, ob überhaupt ein Schlüssel hinterlegt ist
+// und ob die Oberfläche selbst nach einem fragen muss (Worker: ja, lokal: nein).
 export async function pruefeVerbindung() {
   const antwort = await fetch(`${BASIS}/health`)
   if (!antwort.ok) throw new Error(`Server antwortet mit ${antwort.status}`)
@@ -30,7 +54,7 @@ export async function pruefeVerbindung() {
 async function stroem(weg, daten, beiText, signal) {
   const antwort = await fetch(`${BASIS}/${weg}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: koepfe({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(daten),
     signal,
   })

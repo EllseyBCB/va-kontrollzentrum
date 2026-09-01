@@ -27,7 +27,14 @@ import Speicherstand from './Speicherstand.jsx'
 // kein weiterer Schritt, sondern das Ergebnis der fünf davor.
 const ABSCHLUSS = STUFEN.length
 
-export default function Einrichtung({ agent, firma, zurueck, naechsteStelle, serverBereit }) {
+export default function Einrichtung({
+  agent,
+  firma,
+  zurueck,
+  naechsteStelle,
+  serverBereit,
+  apiHinweis,
+}) {
   const akte = firma.firma
   const pos = akte.positionen[agent.id]
   const schritte = useMemo(() => schritteFuer(agent.id), [agent.id])
@@ -200,7 +207,7 @@ export default function Einrichtung({ agent, firma, zurueck, naechsteStelle, ser
                 title={
                   serverBereit
                     ? `${agent.name} schlägt selbst vor, wie diese Stelle aussehen soll`
-                    : 'Dafür muss der lokale Server laufen'
+                    : apiHinweis || ''
                 }
               >
                 Vorschlag holen
@@ -313,10 +320,9 @@ export default function Einrichtung({ agent, firma, zurueck, naechsteStelle, ser
               </button>
             )}
 
-            {!serverBereit && (
+            {!serverBereit && apiHinweis && (
               <span className="randnotiz randnotiz--warnung">
-                Zum Schreibenlassen muss der lokale Server laufen – von Hand
-                geht es auch hier.
+                {apiHinweis} Von Hand geht es auch hier.
               </span>
             )}
           </div>

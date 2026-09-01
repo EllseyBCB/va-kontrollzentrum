@@ -13,7 +13,7 @@ import { gibAuftrag } from '../dienste/api.js'
 import { useSchreiber } from '../zustand/useSchreiber.js'
 import Markdown from './Markdown.jsx'
 
-export default function Betrieb({ firma, zurBelegschaft, serverBereit }) {
+export default function Betrieb({ firma, zurBelegschaft, serverBereit, apiHinweis }) {
   const akte = firma.firma
   const imDienst = firma.scharfe
 
@@ -148,10 +148,8 @@ export default function Betrieb({ firma, zurBelegschaft, serverBereit }) {
             {anweisungOffen ? 'Anweisung zuklappen' : 'Anweisung nachlesen'}
           </button>
 
-          {!serverBereit && (
-            <span className="randnotiz randnotiz--warnung">
-              Dafür muss der lokale Server laufen.
-            </span>
+          {!serverBereit && apiHinweis && (
+            <span className="randnotiz randnotiz--warnung">{apiHinweis}</span>
           )}
         </div>
 

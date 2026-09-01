@@ -1,11 +1,16 @@
-// Lokaler API-Server.
+// Lokaler API-Server - die Fassung für den eigenen Rechner.
 //
 // Warum es ihn überhaupt gibt: Der Anthropic-API-Schlüssel darf NICHT im Browser
 // stehen - jede Besucherin könnte ihn sonst auslesen. Deshalb läuft jeder
-// Aufruf einer Fachkraft über diesen kleinen Server.
+// Aufruf einer Fachkraft über diesen kleinen Server, und der Schlüssel bleibt
+// hier in der .env.
 //
 // Bewusst ohne Express o. Ä.: Node bringt alles Nötige mit, das spart eine
 // Abhängigkeit und macht die Datei für jeden lesbar.
+//
+// WAS gefragt wird, steht nicht hier, sondern in agenten/anfragen.js - dieselbe
+// Datei benutzt der Cloudflare-Worker (worker/index.js). Hier steht nur, WIE es
+// unter Node läuft: zuhören, streamen, Fehler übersetzen.
 //
 // Vier Endpunkte, alle vier streamen ihre Antwort:
 //   POST /api/agent            eine Fachkraft schreibt ihren Konzeptabschnitt
@@ -17,20 +22,7 @@
 import { createServer } from 'node:http'
 import { readFileSync } from 'node:fs'
 import Anthropic from '@anthropic-ai/sdk'
-import { systemPrompt, nutzerNachricht, PROMPTS } from './agenten/prompts.js'
-import {
-  vorschlagSystem,
-  vorschlagNachricht,
-  dienstanweisungSystem,
-  dienstanweisungNachricht,
-  betriebSystem,
-  betriebNachricht,
-} from './agenten/dienst.js'
-// Die Stammdaten der Positionen liegen im Frontend, weil sie dort angezeigt
-// werden. Der Server liest dieselbe Datei - eine reine Datendatei ohne React.
-// So kann die Stellenbezeichnung in der Dienstanweisung nicht von der auf dem
-// Bildschirm abweichen, und der Browser kann sie auch nicht fälschen.
-import { AGENTEN } from '../src/daten/agenten.js'
+import { baueAnfrage, WEGE } from './agenten/anfragen.js'
 
 // .env einlesen (klein und ohne Zusatzpaket).
 try {
@@ -53,11 +45,6 @@ let anthropic = null
 function klient() {
   if (!anthropic) anthropic = new Anthropic()
   return anthropic
-}
-
-// Stellenbezeichnung nachschlagen, für die Dienstanweisung und den Betrieb.
-function stelleVon(agentId) {
-  return AGENTEN.find((a) => a.id === agentId)?.stelle ?? agentId
 }
 
 function sendeJson(antwort, status, daten) {
@@ -93,10 +80,6 @@ function leseJson(anfrage, maxBytes = 2_000_000) {
 
 // --- Der gemeinsame Weg zum Modell ------------------------------------------
 //
-// Alle vier Endpunkte unterscheiden sich nur in zwei Dingen: welcher System-
-// Prompt gilt und welche Nachricht gestellt wird. Das Streamen, das Abbrechen
-// und die Fehlerbehandlung sind für alle gleich und stehen deshalb genau hier.
-//
 // Die Antwort geht als Server-Sent-Events zurück, Stück für Stück. Dadurch
 // sieht man beim Arbeiten zu, statt auf eine leere Seite zu starren.
 //
@@ -105,7 +88,7 @@ function leseJson(anfrage, maxBytes = 2_000_000) {
 //   {art:'text', stueck:'...'}    - ein weiteres Stück Text
 //   {art:'fertig', text:'...'}    - alles zusammen, zur Sicherheit
 //   {art:'fehler', text:'...'}    - etwas ist schiefgegangen
-async function streame(anfrage, antwort, { kennung, system, nachricht, maxTokens = 16000 }) {
+async function streame(anfrage, antwort, { kennung, system, nachricht, maxTokens }) {
   antwort.writeHead(200, {
     'Content-Type': 'text/event-stream; charset=utf-8',
     'Cache-Control': 'no-store',
@@ -176,143 +159,47 @@ async function streame(anfrage, antwort, { kennung, system, nachricht, maxTokens
   antwort.end()
 }
 
-// Prüfungen, die vor jedem der vier Aufrufe gleich sind. Gibt die gelesenen
-// Daten zurück - oder null, wenn schon geantwortet wurde.
-async function vorpruefung(anfrage, antwort, { agentIdNoetig = true } = {}) {
+// --- Verteiler --------------------------------------------------------------
+
+async function behandle(weg, anfrage, antwort) {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return sendeJson(antwort, 503, {
+      fehler: 'Kein API-Schlüssel hinterlegt. Trag ihn in die Datei .env ein.',
+    })
+  }
+
   let daten
   try {
     daten = await leseJson(anfrage)
   } catch (f) {
-    sendeJson(antwort, 400, { fehler: f.message })
-    return null
+    return sendeJson(antwort, 400, { fehler: f.message })
   }
 
-  if (agentIdNoetig && !PROMPTS[daten.agentId]) {
-    sendeJson(antwort, 400, { fehler: `Unbekannte Fachkraft: ${daten.agentId}` })
-    return null
+  const auftrag = baueAnfrage(weg, daten)
+  if (auftrag.fehler) {
+    return sendeJson(antwort, auftrag.status, { fehler: auftrag.fehler })
   }
-  if (!process.env.ANTHROPIC_API_KEY) {
-    sendeJson(antwort, 503, {
-      fehler: 'Kein API-Schlüssel hinterlegt. Trag ihn in die Datei .env ein.',
-    })
-    return null
-  }
-  return daten
-}
-
-// --- 1. Gründungskonzept ----------------------------------------------------
-
-async function konzeptAbschnitt(anfrage, antwort) {
-  const daten = await vorpruefung(anfrage, antwort)
-  if (!daten) return
-
-  const { agentId, idee, bisherige = [] } = daten
-  if (typeof idee !== 'string' || idee.trim().length < 10) {
-    return sendeJson(antwort, 400, { fehler: 'Die Idee ist zu kurz.' })
-  }
-
-  return streame(anfrage, antwort, {
-    kennung: `konzept/${agentId}`,
-    system: systemPrompt(agentId),
-    nachricht: nutzerNachricht(idee, bisherige),
-  })
-}
-
-// --- 2. Vorschlag für einen Einrichtungsschritt ------------------------------
-//
-// Frage und Hinweis kommen aus dem Browser mit. Das ist Absicht: Sie stehen
-// ohnehin auf dem Bildschirm, es ist der sichtbare Teil der Einrichtung.
-// Geheim ist nur, wie die Fachkraft daraus denkt - und das steht hier.
-async function vorschlag(anfrage, antwort) {
-  const daten = await vorpruefung(anfrage, antwort)
-  if (!daten) return
-
-  const { agentId, firma = {}, stufeTitel = '', frage = '', hinweis = '', bisher = [] } = daten
-  if (typeof frage !== 'string' || frage.trim().length < 5) {
-    return sendeJson(antwort, 400, { fehler: 'Zu diesem Schritt fehlt die Frage.' })
-  }
-
-  return streame(anfrage, antwort, {
-    kennung: `vorschlag/${agentId}`,
-    system: vorschlagSystem(agentId),
-    nachricht: vorschlagNachricht({ firma, stufeTitel, frage, hinweis, bisher }),
-    maxTokens: 1500, // ein Vorschlag ist kurz; die Grenze hält ihn kurz
-  })
-}
-
-// --- 3. Die Dienstanweisung -------------------------------------------------
-
-async function dienstanweisung(anfrage, antwort) {
-  const daten = await vorpruefung(anfrage, antwort)
-  if (!daten) return
-
-  const { agentId, firma = {}, antworten = [] } = daten
-  const beantwortet = antworten.filter((a) => a?.antwort?.trim()).length
-  if (beantwortet === 0) {
-    return sendeJson(antwort, 400, {
-      fehler: 'Für diese Stelle wurde noch nichts festgelegt.',
-    })
-  }
-
-  return streame(anfrage, antwort, {
-    kennung: `dienstanweisung/${agentId}`,
-    system: dienstanweisungSystem(agentId, stelleVon(agentId)),
-    nachricht: dienstanweisungNachricht({ firma, antworten }),
-    maxTokens: 4000,
-  })
-}
-
-// --- 4. Im Dienst -----------------------------------------------------------
-
-async function auftrag(anfrage, antwort) {
-  const daten = await vorpruefung(anfrage, antwort)
-  if (!daten) return
-
-  const { agentId, firma = {}, dienstanweisung: anweisung = '', auftrag: text = '', verlauf = [] } =
-    daten
-
-  if (typeof anweisung !== 'string' || anweisung.trim().length < 50) {
-    return sendeJson(antwort, 400, {
-      fehler: 'Diese Stelle hat keine Dienstanweisung - sie darf noch nicht arbeiten.',
-    })
-  }
-  if (typeof text !== 'string' || text.trim().length < 5) {
-    return sendeJson(antwort, 400, { fehler: 'Der Auftrag ist zu kurz.' })
-  }
-
-  return streame(anfrage, antwort, {
-    kennung: `auftrag/${agentId}`,
-    system: betriebSystem(agentId, stelleVon(agentId), anweisung),
-    nachricht: betriebNachricht({ firma, auftrag: text, verlauf }),
-    maxTokens: 8000,
-  })
-}
-
-// --- Verteiler --------------------------------------------------------------
-
-const WEGE = {
-  '/api/agent': konzeptAbschnitt,
-  '/api/vorschlag': vorschlag,
-  '/api/dienstanweisung': dienstanweisung,
-  '/api/auftrag': auftrag,
+  return streame(anfrage, antwort, auftrag)
 }
 
 const server = createServer(async (anfrage, antwort) => {
   const pfad = new URL(anfrage.url, `http://localhost:${PORT}`).pathname
 
   // Lebenszeichen - damit man sofort sieht, ob Oberfläche und Server sich finden
-  // und ob ein Schlüssel hinterlegt ist.
+  // und ob ein Schlüssel hinterlegt ist. "schluesselNoetig" sagt der Oberfläche,
+  // ob sie selbst nach einem fragen muss: lokal nie, beim Worker immer.
   if (pfad === '/api/health') {
     return sendeJson(antwort, 200, {
       status: 'ok',
       schluesselHinterlegt: Boolean(process.env.ANTHROPIC_API_KEY),
+      schluesselNoetig: false,
       modell: MODELL,
     })
   }
 
-  const behandeln = WEGE[pfad]
-  if (behandeln && anfrage.method === 'POST') {
-    return behandeln(anfrage, antwort)
+  const weg = pfad.startsWith('/api/') ? pfad.slice(5) : null
+  if (weg && WEGE.includes(weg) && anfrage.method === 'POST') {
+    return behandle(weg, anfrage, antwort)
   }
 
   sendeJson(antwort, 404, { fehler: 'Unbekannter Endpunkt', pfad })

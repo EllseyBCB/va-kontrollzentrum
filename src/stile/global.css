@@ -875,6 +875,73 @@ body {
 
 /* ---------- Schmale Bildschirme ---------- */
 
+
+/* ---------- Schlüsselzeile (nur in der veröffentlichten Fassung) ---------- */
+
+/* Ein Formularkopf, kein Warnkasten: Es ist ja nichts schiefgegangen, es fehlt
+   nur eine Angabe. Deshalb dieselbe Sprache wie der Rest des Bogens - eine
+   Haarlinie oben und unten, sonst Papier. */
+.zugang {
+  max-width: var(--spalte);
+  margin: 0 0 var(--luft-weit);
+  padding: var(--luft) 0;
+  border-top: 1px solid var(--linie);
+  border-bottom: 1px solid var(--linie);
+}
+
+.zugang__vorspann {
+  margin: 0 0 var(--luft);
+  color: var(--tinte-leise);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+.zugang__vorspann a { color: var(--akzent); }
+
+.zugang__zeile {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--luft-eng);
+}
+/* Der Schlüssel ist Maschinentext, keine Prosa - also Schreibmaschine. */
+.zugang__zeile .feld {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9rem;
+}
+
+.zugang__merken {
+  display: flex;
+  align-items: baseline;
+  gap: var(--luft-eng);
+  margin-top: var(--luft);
+  font-size: 0.85rem;
+  color: var(--tinte-leise);
+  cursor: pointer;
+}
+.zugang__merken input { accent-color: var(--akzent); }
+
+/* Steht ein Schlüssel, schrumpft das Ganze auf eine Bestätigungszeile. */
+.zugang--steht {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--luft-eng) var(--luft);
+  padding: var(--luft-eng) 0;
+}
+.zugang__marke {
+  font-family: var(--grotesk);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tinte-fein);
+}
+.zugang__wert {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+  color: var(--tinte);
+}
+
 @media (max-width: 640px) {
   .blatt { padding: var(--luft) var(--luft) var(--luft-weit); }
 
@@ -902,4 +969,7 @@ body {
   .stelle--scharf { padding-left: var(--luft-eng); }
 
   .stellenkopf__rechts { flex-direction: column; align-items: flex-end; gap: 2px; }
+
+  .zugang__zeile .feld { flex-basis: 100%; }
+  .zugang__zeile .knopf { width: 100%; }
 }

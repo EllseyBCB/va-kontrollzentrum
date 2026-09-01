@@ -14,6 +14,7 @@ export default function IdeeFormular({
   zuruecksetzen,
   fertigeAnzahl,
   schluesselFehlt,
+  apiHinweis,
 }) {
   const zuKurz = idee.trim().length < MINDESTLAENGE
   const etwasDa = fertigeAnzahl > 0
@@ -58,11 +59,8 @@ export default function IdeeFormular({
         )}
 
         {/* Genau ein Hinweis, in der Reihenfolge der Dringlichkeit. */}
-        {schluesselFehlt ? (
-          <span className="randnotiz randnotiz--warnung">
-            Es ist noch kein API-Schlüssel hinterlegt – trag ihn in die Datei
-            <code> .env </code> ein und starte den Server neu.
-          </span>
+        {schluesselFehlt && apiHinweis ? (
+          <span className="randnotiz randnotiz--warnung">{apiHinweis}</span>
         ) : laeuft ? (
           <span className="randnotiz">
             Die Fachleute arbeiten nacheinander. Das dauert ein paar Minuten.
