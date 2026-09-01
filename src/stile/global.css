@@ -56,6 +56,19 @@ body {
   margin: var(--luft) 0 var(--luft-sehr-weit);
 }
 
+/* Meldung, wenn der lokale Server nicht antwortet. */
+.warnleiste {
+  margin: 0 0 var(--luft-weit);
+  padding: var(--luft);
+  background: var(--akzent-hell);
+  border-left: 3px solid var(--akzent);
+  font-size: 0.92rem;
+}
+.warnleiste code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.88em;
+}
+
 /* ---------- Abschnitte ---------- */
 
 .abschnitt {
@@ -108,7 +121,7 @@ body {
 }
 .feld::placeholder { color: var(--tinte-fein); }
 .feld:focus { outline: 2px solid var(--akzent); outline-offset: 1px; }
-.feld:disabled { background: var(--papier-tief); }
+.feld:disabled { background: var(--papier-tief); color: var(--tinte-leise); }
 
 .feld__fuss {
   display: flex;
@@ -118,6 +131,8 @@ body {
   margin-top: var(--luft);
   max-width: var(--spalte);
 }
+
+/* ---------- Knöpfe ---------- */
 
 .knopf {
   padding: 11px 22px;
@@ -139,10 +154,38 @@ body {
   cursor: not-allowed;
 }
 
+/* Zurückhaltende Zweitform - für Abbrechen, Leeren, Nebensachen. */
+.knopf--still {
+  background: transparent;
+  color: var(--tinte);
+  border-color: var(--linie-kraeftig);
+}
+.knopf--still:hover:not(:disabled) { background: var(--tinte); color: var(--papier); }
+
+.knopf--klein {
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: transparent;
+  color: var(--tinte-leise);
+  border-color: var(--linie);
+}
+.knopf--klein:hover:not(:disabled) {
+  background: transparent;
+  color: var(--akzent);
+  border-color: var(--akzent);
+}
+
 .randnotiz {
   font-size: 0.85rem;
   color: var(--tinte-fein);
   font-style: italic;
+}
+.randnotiz--warnung { color: var(--akzent); font-style: normal; }
+.randnotiz code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-style: normal;
+  font-size: 0.9em;
 }
 
 /* ---------- Die acht Kapitel ---------- */
@@ -154,15 +197,17 @@ body {
   border-top: 1px solid var(--linie);
 }
 
-/* Eine Zeile je Fachkraft: Ziffer | Text | Stand.
-   Die Trennlinien machen die Gliederung, nicht Kästen. */
 .kapitel {
+  border-bottom: 1px solid var(--linie);
+  padding: var(--luft) 0;
+}
+
+/* Die Kopfzeile eines Kapitels: Ziffer | Text | Stand. */
+.kapitel__zeile {
   display: grid;
   grid-template-columns: 3.5rem 1fr auto;
   align-items: baseline;
   gap: var(--luft);
-  padding: var(--luft) 0;
-  border-bottom: 1px solid var(--linie);
 }
 
 .kapitel__ziffer {
@@ -199,7 +244,25 @@ body {
   max-width: 58ch;
 }
 
+.kapitel__fehler {
+  margin: var(--luft-eng) 0 0;
+  color: var(--akzent);
+  font-size: 0.9rem;
+  max-width: 58ch;
+}
+
+.kapitel__knoepfe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--luft-eng);
+  margin-top: var(--luft-eng);
+}
+.kapitel__knoepfe:empty { display: none; }
+
 .kapitel__stand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.78rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -207,12 +270,41 @@ body {
   white-space: nowrap;
 }
 
-/* Stände - greifen, sobald die Ablaufsteuerung sie setzt. */
+/* Pulsierender Punkt, solange eine Fachkraft schreibt. */
+.punkt {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--akzent);
+  animation: pochen 1.4s ease-in-out infinite;
+}
+@keyframes pochen {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .punkt { animation: none; }
+}
+
+/* Stände */
 .kapitel--laeuft { background: var(--akzent-hell); }
 .kapitel--laeuft .kapitel__ziffer,
 .kapitel--laeuft .kapitel__stand { color: var(--akzent); }
 .kapitel--fertig .kapitel__ziffer { color: var(--tinte); }
 .kapitel--fehler .kapitel__stand { color: var(--akzent); }
+
+/* Der aufgeklappte Beitrag einer Fachkraft. */
+.kapitel__beitrag {
+  margin: var(--luft) 0 0 3.5rem;
+  padding-left: var(--luft);
+  border-left: 2px solid var(--linie);
+  max-width: var(--spalte);
+}
+.kapitel__beitrag--wartet {
+  color: var(--tinte-fein);
+  font-style: italic;
+  border-left-color: var(--akzent);
+}
 
 /* ---------- Ergebnis ---------- */
 
@@ -232,6 +324,93 @@ body {
   line-height: 1.7;
 }
 
+.ergebnis__kopf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--luft);
+  padding-bottom: var(--luft);
+  border-bottom: 1px solid var(--linie);
+  margin-bottom: var(--luft-weit);
+}
+
+.konzept { max-width: var(--spalte); }
+
+/* ---------- Dargestellter Markdown ---------- */
+
+.markdown { max-width: var(--spalte); }
+
+.markdown h3 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.3rem;
+  line-height: 1.25;
+  margin: var(--luft-weit) 0 var(--luft-eng);
+}
+.markdown h3:first-child { margin-top: 0; }
+
+.markdown h4 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin: var(--luft) 0 var(--luft-eng);
+}
+
+.markdown p { margin: 0 0 var(--luft); }
+
+.markdown ul,
+.markdown ol {
+  margin: 0 0 var(--luft);
+  padding-left: 1.3rem;
+}
+.markdown li { margin-bottom: 6px; }
+
+.markdown strong { font-weight: 600; }
+
+.markdown code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.88em;
+  background: var(--papier-tief);
+  padding: 1px 5px;
+  border-radius: 2px;
+}
+
+.markdown hr {
+  border: none;
+  border-top: 1px solid var(--linie);
+  margin: var(--luft-weit) 0;
+}
+
+/* Breite Tabellen dürfen für sich allein scrollen -
+   die Seite selbst soll nie waagerecht scrollen. */
+.tabellenhuelle {
+  overflow-x: auto;
+  margin: 0 0 var(--luft);
+}
+
+.markdown table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.92rem;
+}
+.markdown th,
+.markdown td {
+  text-align: left;
+  padding: 8px 12px 8px 0;
+  border-bottom: 1px solid var(--linie);
+  vertical-align: top;
+}
+.markdown th {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tinte-fein);
+  border-bottom-color: var(--linie-kraeftig);
+  white-space: nowrap;
+}
+
 /* ---------- Fuß ---------- */
 
 .fussleiste {
@@ -246,17 +425,481 @@ body {
   color: var(--tinte-fein);
 }
 
+/* ---------- Reiterzeile ---------- */
+
+/* Wie ein Inhaltsverzeichnis über der Seite: drei Einträge, unterstrichen ist
+   der, auf dem man steht. Keine Kacheln, keine Schaltflächen-Anmutung. */
+.reiterzeile {
+  display: flex;
+  gap: var(--luft-weit);
+  border-bottom: 1px solid var(--linie-kraeftig);
+  margin-bottom: var(--luft-weit);
+}
+
+.reiter {
+  appearance: none;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+  padding: 0 0 var(--luft-eng);
+  text-align: left;
+  cursor: pointer;
+  color: var(--tinte-leise);
+  font-family: var(--grotesk);
+}
+.reiter:hover { color: var(--tinte); }
+
+.reiter__name {
+  display: block;
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.reiter__unter {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tinte-fein);
+  margin-top: 2px;
+}
+
+.reiter--aktiv {
+  color: var(--tinte);
+  border-bottom-color: var(--akzent);
+}
+.reiter--aktiv .reiter__unter { color: var(--akzent); }
+
+/* ---------- Belegschaft ---------- */
+
+.firmenzeile {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--luft);
+  padding-bottom: var(--luft);
+  border-bottom: 1px solid var(--linie);
+  margin-bottom: var(--luft-weit);
+}
+
+.firmenzeile__marke {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--akzent);
+}
+
+/* Einzeiliges Eingabefeld - dieselbe Anmutung wie das große. */
+.feld--zeile {
+  width: auto;
+  flex: 1 1 18rem;
+  padding: 8px 12px;
+  font-size: 1rem;
+}
+
+.feld--gross { max-width: none; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9rem; }
+
+/* Fünf Striche für fünf Einrichtungsschritte. Zählen muss man nicht. */
+.stufenbalken {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: var(--luft-eng);
+}
+
+.stufenbalken__strich {
+  width: 22px;
+  height: 3px;
+  background: var(--linie);
+}
+.stufenbalken__strich--voll { background: var(--tinte); }
+
+.stufenbalken__zahl {
+  margin-left: var(--luft-eng);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tinte-fein);
+}
+
+/* Der einzige Knopf, der etwas in den Dienst stellt - deshalb der einzige
+   in der Akzentfarbe. */
+.knopf--scharf {
+  color: var(--akzent);
+  border-color: var(--akzent);
+}
+.knopf--scharf:hover:not(:disabled) {
+  background: var(--akzent);
+  border-color: var(--akzent);
+  color: var(--papier);
+}
+.knopf.knopf--scharf:not(.knopf--klein) {
+  background: var(--akzent);
+  border-color: var(--akzent);
+  color: var(--papier);
+}
+.knopf.knopf--scharf:not(.knopf--klein):hover { background: var(--tinte); border-color: var(--tinte); }
+
+/* Eine Stelle im Dienst bekommt einen Strich am Rand - sichtbar, ohne dass die
+   Zeile sich sonst verändert. */
+.stelle--scharf { border-left: 3px solid var(--akzent); padding-left: var(--luft); }
+.stelle--scharf .kapitel__ziffer,
+.stelle--scharf .kapitel__stand { color: var(--akzent); }
+.stelle--unbesetzt .kapitel__ziffer { color: var(--tinte-fein); }
+
+.aktenzeile {
+  border-top: 1px solid var(--linie);
+  padding-top: var(--luft);
+  margin-top: var(--luft-weit);
+  display: flex;
+  flex-direction: column;
+  gap: var(--luft-eng);
+  max-width: var(--spalte);
+}
+
+/* ---------- Einrichtung einer Stelle ---------- */
+
+.stellenkopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--luft);
+  margin-bottom: var(--luft-weit);
+}
+
+/* Die Schrittleiste: sechs Marken, die letzte ist der Abschluss. */
+.schrittleiste {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0 0 var(--luft-weit);
+  padding: 0;
+  border-top: 1px solid var(--linie);
+  border-bottom: 1px solid var(--linie);
+}
+
+.schrittmarke {
+  display: flex;
+  align-items: baseline;
+  gap: var(--luft-eng);
+  appearance: none;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: var(--luft-eng) var(--luft) var(--luft-eng) 0;
+  margin-right: var(--luft);
+  cursor: pointer;
+  font-family: var(--grotesk);
+  color: var(--tinte-fein);
+}
+.schrittmarke:hover { color: var(--tinte); }
+
+.schrittmarke__ziffer {
+  font-family: var(--serif);
+  font-size: 1.1rem;
+}
+
+.schrittmarke__titel {
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.schrittmarke--voll { color: var(--tinte); }
+.schrittmarke--voll .schrittmarke__ziffer { font-weight: 600; }
+.schrittmarke--hier {
+  color: var(--akzent);
+  border-bottom-color: var(--akzent);
+}
+
+.schritt { max-width: var(--spalte); }
+
+.schritt__zaehler {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tinte-fein);
+  margin: 0 0 var(--luft-eng);
+}
+
+/* Die Frage ist die Hauptsache auf dieser Seite - deshalb Serif und groß. */
+.schritt__frage {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 1.5rem;
+  line-height: 1.3;
+  margin: 0 0 var(--luft-eng);
+}
+
+.schritt__hinweis {
+  color: var(--tinte-leise);
+  margin: 0 0 var(--luft);
+  font-size: 0.95rem;
+}
+
+.schrittfuss {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--luft);
+  margin-top: var(--luft-weit);
+  padding-top: var(--luft);
+  border-top: 1px solid var(--linie);
+}
+
+/* Der Vorschlag der Fachkraft. Eingerückt und mit Randlinie: erkennbar als
+   fremde Rede, nicht als das, was schon festgelegt wäre. */
+.vorschlag {
+  margin-top: var(--luft);
+  padding: var(--luft) 0 var(--luft) var(--luft);
+  border-left: 2px solid var(--akzent);
+  background: var(--papier-tief);
+}
+
+.vorschlag__text {
+  font-family: var(--serif);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  margin: var(--luft-eng) 0 var(--luft-eng);
+  max-width: 58ch;
+}
+
+/* Die fünf Festlegungen in Kurzform, vor dem Schreiben der Anweisung. */
+.festlegungen {
+  list-style: none;
+  margin: 0 0 var(--luft-weit);
+  padding: 0;
+  border-top: 1px solid var(--linie);
+}
+.festlegungen li {
+  display: grid;
+  grid-template-columns: 13rem 1fr;
+  gap: var(--luft);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--linie);
+  font-size: 0.92rem;
+}
+.festlegungen--offen span { color: var(--akzent); font-style: italic; }
+
+.festlegungen__marke {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--grotesk);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tinte-fein);
+}
+.festlegungen__marke:hover { color: var(--akzent); }
+
+/* Die Dienstanweisung selbst - wie ein eingelegtes Blatt. */
+.anweisung {
+  margin-top: var(--luft-weit);
+  padding: var(--luft-weit) 0;
+  border-top: 1px solid var(--linie-kraeftig);
+  border-bottom: 1px solid var(--linie-kraeftig);
+}
+.anweisung--nachlesen {
+  margin-top: var(--luft);
+  padding: var(--luft) 0;
+  border-color: var(--linie);
+}
+
+/* Die Freigabe. Bewusst abgesetzt: hier wird etwas scharf gestellt. */
+.freigabe {
+  margin-top: var(--luft-weit);
+  padding: var(--luft);
+  background: var(--akzent-hell);
+  border-left: 3px solid var(--akzent);
+}
+.freigabe__text {
+  margin: 0 0 var(--luft);
+  max-width: 58ch;
+  font-size: 0.95rem;
+}
+
+/* ---------- Betrieb ---------- */
+
+/* Wer im Dienst ist - eine Reihe von Namensschildern. */
+.dienstplan {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border-top: 1px solid var(--linie);
+  border-bottom: 1px solid var(--linie);
+  margin-bottom: var(--luft-weit);
+}
+
+.dienstmarke {
+  appearance: none;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: var(--luft-eng) var(--luft) var(--luft-eng) 0;
+  margin-right: var(--luft-weit);
+  text-align: left;
+  cursor: pointer;
+  color: var(--tinte-leise);
+  font-family: var(--grotesk);
+}
+.dienstmarke:hover { color: var(--tinte); }
+
+.dienstmarke__ziffer {
+  font-family: var(--serif);
+  font-size: 0.9rem;
+  color: var(--tinte-fein);
+  margin-right: 6px;
+}
+.dienstmarke__name {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+.dienstmarke__stelle {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tinte-fein);
+}
+
+.dienstmarke--gewaehlt {
+  color: var(--tinte);
+  border-bottom-color: var(--akzent);
+}
+.dienstmarke--gewaehlt .dienstmarke__ziffer,
+.dienstmarke--gewaehlt .dienstmarke__stelle { color: var(--akzent); }
+
+/* Das Arbeitsergebnis eines Auftrags. */
+.ergebnis__blatt {
+  margin-top: var(--luft-weit);
+  padding-top: var(--luft);
+  border-top: 1px solid var(--linie-kraeftig);
+}
+
+.protokoll { margin-top: var(--luft-sehr-weit); max-width: var(--spalte); }
+
+.protokoll__liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--linie);
+}
+.protokoll__liste > li { border-bottom: 1px solid var(--linie); }
+
+.protokoll__liste summary {
+  padding: 10px 0;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+.protokoll__liste summary:hover { color: var(--akzent); }
+
+.protokoll__datum {
+  display: inline-block;
+  min-width: 6.5rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--tinte-fein);
+}
+
+.protokoll__antwort {
+  padding: 0 0 var(--luft) var(--luft);
+  border-left: 2px solid var(--linie);
+  margin-bottom: var(--luft);
+}
+
+/* ---------- Der Faden vom Konzept zur Belegschaft ---------- */
+
+.weiterfaden {
+  margin-top: var(--luft-sehr-weit);
+  padding-top: var(--luft);
+  border-top: 1px solid var(--linie-kraeftig);
+  max-width: var(--spalte);
+}
+.weiterfaden__text {
+  margin: 0 0 var(--luft);
+  color: var(--tinte-leise);
+}
+
+/* Die leere Seite darf einen Weg hinaus anbieten. */
+.leerseite .knopf { margin-top: var(--luft); }
+
+/* ---------- Der Speicherbeleg ---------- */
+
+/* Bewusst leise: Es ist eine Bestätigung, keine Meldung. Wer sie sucht, findet
+   sie; wer arbeitet, wird nicht von ihr aufgehalten. */
+.speicherstand {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tinte-fein);
+  white-space: nowrap;
+}
+
+/* Nach einer echten Änderung kurz kräftiger - damit man den Wechsel bemerkt,
+   ohne dass etwas blinkt. */
+.speicherstand--frisch { color: var(--tinte-leise); }
+.speicherstand--frisch::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 7px;
+  vertical-align: middle;
+  background: var(--tinte-leise);
+}
+
+.stellenkopf__rechts {
+  display: flex;
+  align-items: center;
+  gap: var(--luft);
+}
+
+.aktenzeile__kopf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--luft);
+}
+.aktenzeile__kopf .abschnitt__marke { margin-bottom: 0; }
+
 /* ---------- Schmale Bildschirme ---------- */
 
 @media (max-width: 640px) {
   .blatt { padding: var(--luft) var(--luft) var(--luft-weit); }
 
-  /* Ziffer und Stand rutschen in eine Zeile über den Text. */
-  .kapitel {
-    grid-template-columns: 2.5rem 1fr;
-  }
+  /* Ziffer und Text nebeneinander, der Stand rutscht darunter. */
+  .kapitel__zeile { grid-template-columns: 2.5rem 1fr; }
   .kapitel__stand {
     grid-column: 2;
     justify-self: start;
+    margin-top: var(--luft-eng);
   }
+
+  .kapitel__beitrag {
+    margin-left: 0;
+    padding-left: var(--luft-eng);
+  }
+
+  .reiterzeile { gap: var(--luft); }
+  .reiter__name { font-size: 1rem; }
+
+  .festlegungen li { grid-template-columns: 1fr; gap: 2px; }
+
+  .schrittfuss { flex-direction: column; }
+  .schrittfuss .knopf { width: 100%; }
+
+  .stelle--scharf { padding-left: var(--luft-eng); }
+
+  .stellenkopf__rechts { flex-direction: column; align-items: flex-end; gap: 2px; }
 }
