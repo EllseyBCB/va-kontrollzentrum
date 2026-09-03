@@ -2,8 +2,9 @@
 //
 // Die Oberfläche liegt auf GitHub Pages. Pages liefert nur Dateien aus und kann
 // nichts ausführen, also hat sie bis jetzt tote Knöpfe gezeigt. Dieser Worker
-// ist der fehlende Teil: dieselben vier Endpunkte wie server/index.js, nur eben
-// im Netz statt auf dem eigenen Rechner.
+// ist der fehlende Teil: dieselben Endpunkte wie server/index.js, nur eben
+// im Netz statt auf dem eigenen Rechner. Welche das sind, sagt WEGE - kommt
+// einer dazu, muss hier nichts geändert werden.
 //
 // Der entscheidende Unterschied steht gleich am Anfang:
 //

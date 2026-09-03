@@ -111,6 +111,27 @@ export function agentNach(id) {
   return AGENTEN.find((a) => a.id === id) ?? null
 }
 
+/**
+ * Wer in einer Besprechung wann spricht.
+ *
+ * Grundsätzlich die Reihenfolge von oben - sie ist ja nicht willkürlich, sondern
+ * baut aufeinander auf: erst der Markt, dann das Angebot, dann die Zahlen.
+ *
+ * Mit einer Ausnahme: Die Geschäftsführung spricht zuletzt, auch wenn sie oben
+ * steht. Wer den Beschluss schreibt, muss alle gehört haben - und eine
+ * Geschäftsführung, die als Erste ihre Meinung sagt, bekommt von den anderen
+ * sieben Zustimmung statt Widerspruch. Das ist im Sitzungssaal nicht anders.
+ *
+ * Und deshalb steht die Regel hier bei den Stammdaten: Reihenfolge gehört an
+ * eine einzige Stelle, sonst legen zwei Dateien sie unterschiedlich fest.
+ */
+export function sprechreihenfolge(ids = []) {
+  const gewaehlt = AGENTEN.filter((a) => ids.includes(a.id))
+  const chef = gewaehlt.find((a) => a.id === 'ceo')
+  if (!chef) return gewaehlt
+  return [...gewaehlt.filter((a) => a.id !== 'ceo'), chef]
+}
+
 // --- Stände während eines Konzept-Durchlaufs --------------------------------
 
 export const STATUS = {

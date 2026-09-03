@@ -1,7 +1,7 @@
 # Cloudflare-Worker: die API der veröffentlichten Fassung.
 #
 # Die Oberfläche liegt weiterhin auf GitHub Pages (siehe .github/workflows/deploy.yml).
-# Nur die vier Endpunkte laufen hier - Pages kann nichts ausführen.
+# Nur die Endpunkte laufen hier - Pages kann nichts ausführen.
 #
 # Veröffentlichen:
 #   npx wrangler login        einmalig

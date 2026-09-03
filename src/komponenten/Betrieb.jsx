@@ -1,9 +1,13 @@
 // Der Betrieb: einer Stelle, die im Dienst ist, einen Auftrag geben.
 //
 // Hier zeigt sich, ob die Einrichtung etwas taugt. Die Fachkraft bekommt für
-// jeden Auftrag drei Dinge mit: ihre Dienstanweisung, das Gründungskonzept und
-// ihre letzten Aufträge. Was ihre Anweisung verbietet, tut sie nicht - sie sagt
-// dann, welche Stelle der Anweisung dagegensteht.
+// jeden Auftrag vier Dinge mit: ihre Dienstanweisung, das Gründungskonzept,
+// ihre letzten Aufträge - und den Aushang, also das, woran die anderen Stellen
+// zuletzt gearbeitet haben. Was ihre Anweisung verbietet, tut sie nicht - sie
+// sagt dann, welche Stelle der Anweisung dagegensteht.
+//
+// Der Aushang steht auch am Bildschirm, aufklappbar. Was ungefragt in einen
+// Aufruf hineingeht, soll man nachlesen können - sonst ist es Zauberei.
 //
 // Wer hier niemanden vorfindet, hat noch niemanden scharf gestellt. Das ist
 // kein Fehler, sondern die Reihenfolge.
@@ -20,6 +24,7 @@ export default function Betrieb({ firma, zurBelegschaft, serverBereit, apiHinwei
   const [gewaehlt, setGewaehlt] = useState(imDienst[0]?.id ?? null)
   const [auftrag, setAuftrag] = useState('')
   const [anweisungOffen, setAnweisungOffen] = useState(false)
+  const [aushangOffen, setAushangOffen] = useState(false)
   const ergebnis = useSchreiber()
 
   // Wird die gewählte Stelle zurückgezogen, muss die Auswahl nachziehen.
@@ -53,6 +58,10 @@ export default function Betrieb({ firma, zurBelegschaft, serverBereit, apiHinwei
   const agent = imDienst.find((a) => a.id === gewaehlt) ?? imDienst[0]
   const pos = akte.positionen[agent.id]
 
+  // Was die anderen zuletzt gemeldet haben. Wird berechnet, nicht gespeichert -
+  // so kann er nie veralten.
+  const aushang = firma.aushang(agent.id)
+
   const abschicken = async () => {
     const text = auftrag.trim()
     if (text.length < 5) return
@@ -65,6 +74,7 @@ export default function Betrieb({ firma, zurBelegschaft, serverBereit, apiHinwei
         auftrag: text,
         // Die letzten drei genügen als Gedächtnis; mehr bläht jeden Aufruf auf.
         verlauf: pos.protokoll.slice(-3),
+        aushang,
         beiText,
         signal,
       }),
@@ -85,7 +95,8 @@ export default function Betrieb({ firma, zurBelegschaft, serverBereit, apiHinwei
           ? 'Eine Stelle ist im Dienst.'
           : `${imDienst.length} Stellen sind im Dienst.`}{' '}
         Wähl aus, wer den Auftrag bekommt. Jede arbeitet nach ihrer eigenen
-        Anweisung und kennt das Gründungskonzept.
+        Anweisung, kennt das Gründungskonzept und weiß, woran die anderen
+        zuletzt gearbeitet haben.
       </p>
 
       {/* Wer ist im Dienst - und wer bekommt den Auftrag. */}
@@ -97,6 +108,7 @@ export default function Betrieb({ firma, zurBelegschaft, serverBereit, apiHinwei
             onClick={() => {
               setGewaehlt(a.id)
               setAnweisungOffen(false)
+              setAushangOffen(false)
               ergebnis.leeren()
             }}
           >
@@ -148,6 +160,15 @@ export default function Betrieb({ firma, zurBelegschaft, serverBereit, apiHinwei
             {anweisungOffen ? 'Anweisung zuklappen' : 'Anweisung nachlesen'}
           </button>
 
+          {aushang.length > 0 && (
+            <button
+              className="knopf knopf--klein"
+              onClick={() => setAushangOffen(!aushangOffen)}
+            >
+              {aushangOffen ? 'Aushang zuklappen' : `Aushang ansehen (${aushang.length})`}
+            </button>
+          )}
+
           {!serverBereit && apiHinweis && (
             <span className="randnotiz randnotiz--warnung">{apiHinweis}</span>
           )}
@@ -156,6 +177,27 @@ export default function Betrieb({ firma, zurBelegschaft, serverBereit, apiHinwei
         {anweisungOffen && (
           <div className="anweisung anweisung--nachlesen">
             <Markdown text={pos.dienstanweisung} />
+          </div>
+        )}
+
+        {aushangOffen && (
+          <div className="aushang">
+            <p className="randnotiz">
+              Das geht bei jedem Auftrag mit – gekürzt, als Hintergrund. Es sind
+              Meldungen zur Kenntnis, keine Aufträge.
+            </p>
+            {aushang.map((e, i) => (
+              <div className="aushang__zettel" key={i}>
+                <p className="aushang__kopf">
+                  <span className="aushang__von">{e.von}</span>
+                  {e.wann && <span className="aushang__wann">{e.wann}</span>}
+                </p>
+                {e.worum && <p className="aushang__worum">{e.worum}</p>}
+                <div className="aushang__text">
+                  <Markdown text={e.ergebnis} />
+                </div>
+              </div>
+            ))}
           </div>
         )}
 

@@ -31,7 +31,7 @@ export default function Belegschaft({ firma, einrichten, hinweis }) {
   }
 
   const leeren = () => {
-    if (!window.confirm('Wirklich alles löschen? Konzept, alle Festlegungen und alle Dienstanweisungen sind dann weg.')) return
+    if (!window.confirm('Wirklich alles löschen? Konzept, alle Festlegungen, alle Dienstanweisungen und alle Besprechungen sind dann weg.')) return
     firma.akteLeeren()
   }
 

@@ -973,3 +973,180 @@ body {
   .zugang__zeile .feld { flex-basis: 100%; }
   .zugang__zeile .knopf { width: 100%; }
 }
+
+/* ---------- Der Aushang: was die anderen Stellen zuletzt gemeldet haben ----
+
+   Bewusst kleiner und leiser gesetzt als das eigene Arbeitsergebnis. Es ist
+   Hintergrund, kein Text, den man Zeile für Zeile liest - und es soll nicht
+   mit dem konkurrieren, worum es auf der Seite geht. */
+
+.aushang {
+  margin-top: var(--luft);
+  padding: var(--luft) 0;
+  border-top: 1px solid var(--linie);
+  border-bottom: 1px solid var(--linie);
+  max-width: var(--spalte);
+}
+
+.aushang__zettel {
+  padding-left: var(--luft);
+  border-left: 2px solid var(--linie);
+  margin-top: var(--luft);
+}
+.aushang__zettel:first-of-type { margin-top: var(--luft-eng); }
+
+.aushang__kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--luft);
+  margin: 0 0 4px;
+  font-family: var(--grotesk);
+}
+.aushang__von {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--akzent);
+}
+.aushang__wann {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--tinte-fein);
+  white-space: nowrap;
+}
+
+.aushang__worum {
+  margin: 0 0 var(--luft-eng);
+  font-family: var(--grotesk);
+  font-size: 0.85rem;
+  color: var(--tinte-leise);
+}
+
+/* Der mitgeschickte Auszug, gedrängt gesetzt: Er ist zitiert, nicht gesagt. */
+.aushang__text { font-size: 0.9rem; color: var(--tinte-leise); }
+.aushang__text .markdown > :first-child { margin-top: 0; }
+
+/* ---------- Die Besprechung ------------------------------------------------
+
+   Ein Sitzungsprotokoll: eine Wortmeldung nach der anderen, jede an ihrer
+   linken Linie. Der Beitrag mit dem Vorsitz trägt die Akzentlinie - er enthält
+   den Beschluss, und den sucht man später als Einziges wieder. */
+
+/* Wer am Tisch sitzt. Dieselbe Leiste wie im Betrieb, andere Bedeutung:
+   dort wählt man EINE Stelle, hier schaltet man mehrere zu. */
+.dienstmarke--amtisch {
+  color: var(--tinte);
+  border-bottom-color: var(--linie-kraeftig);
+}
+.dienstmarke--amtisch .dienstmarke__ziffer,
+.dienstmarke--amtisch .dienstmarke__stelle { color: var(--tinte); }
+.dienstmarke:disabled { cursor: default; opacity: 0.55; }
+
+.reihenfolge {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--luft-eng);
+  margin: var(--luft) 0 0;
+  padding-top: var(--luft-eng);
+  border-top: 1px solid var(--linie);
+  font-family: var(--grotesk);
+  font-size: 0.9rem;
+  color: var(--tinte);
+}
+.reihenfolge__pfeil {
+  margin-right: var(--luft-eng);
+  color: var(--tinte-fein);
+}
+.reihenfolge .randnotiz { flex-basis: 100%; }
+
+.sitzung { margin-top: var(--luft-weit); max-width: var(--spalte); }
+
+.wortmeldung {
+  padding: 0 0 var(--luft) var(--luft);
+  border-left: 2px solid var(--linie);
+  margin-bottom: var(--luft-weit);
+}
+
+.wortmeldung__kopf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--luft-eng);
+  margin-bottom: var(--luft-eng);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--linie);
+}
+.wortmeldung__ziffer {
+  font-family: var(--serif);
+  font-size: 0.9rem;
+  color: var(--tinte-fein);
+}
+.wortmeldung__name {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+.wortmeldung__stelle {
+  font-family: var(--grotesk);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tinte-fein);
+}
+.wortmeldung__vorsitz {
+  margin-left: auto;
+  font-family: var(--grotesk);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--akzent);
+}
+
+.wortmeldung--vorsitz { border-left-color: var(--akzent); }
+.wortmeldung--vorsitz .wortmeldung__kopf { border-bottom-color: var(--linie-kraeftig); }
+
+.wortmeldung .markdown > :first-child { margin-top: 0; }
+
+/* ---------- Das Beispielband -----------------------------------------------
+
+   Steht unter der Reiterzeile und ist die einzige Stelle, an der die Anwendung
+   von sich aus etwas anbietet. Deshalb abgesetzt, aber nicht laut: eine
+   Rubrikzeile in der Akzentfarbe, Text in Grotesk, kein Kasten. */
+
+.beispielband {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--luft-eng) var(--luft);
+  margin-bottom: var(--luft-weit);
+  padding: var(--luft-eng) 0 var(--luft);
+  border-bottom: 1px solid var(--linie);
+}
+
+.beispielband__marke {
+  font-family: var(--grotesk);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--akzent);
+  white-space: nowrap;
+}
+
+.beispielband__text {
+  flex: 1 1 22rem;
+  margin: 0;
+  font-family: var(--grotesk);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--tinte-leise);
+}
+
+/* Ist das Beispiel geladen, trägt das Band die Akzentlinie - dieselbe Sprache
+   wie beim Vorsitz in der Besprechung: hier gilt etwas Besonderes. */
+.beispielband--laeuft {
+  padding-left: var(--luft);
+  border-left: 2px solid var(--akzent);
+  border-bottom-color: var(--linie);
+}

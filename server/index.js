@@ -12,11 +12,12 @@
 // Datei benutzt der Cloudflare-Worker (worker/index.js). Hier steht nur, WIE es
 // unter Node läuft: zuhören, streamen, Fehler übersetzen.
 //
-// Vier Endpunkte, alle vier streamen ihre Antwort:
+// Fünf Endpunkte, alle fünf streamen ihre Antwort:
 //   POST /api/agent            eine Fachkraft schreibt ihren Konzeptabschnitt
 //   POST /api/vorschlag        sie schlägt vor, wie ihre Stelle eingerichtet wird
 //   POST /api/dienstanweisung  aus den Festlegungen wird ihre Dienstanweisung
 //   POST /api/auftrag          die scharf gestellte Stelle erledigt einen Auftrag
+//   POST /api/besprechung      sie meldet sich in einer Runde zu Wort
 //   GET  /api/health           Lebenszeichen
 
 import { createServer } from 'node:http'

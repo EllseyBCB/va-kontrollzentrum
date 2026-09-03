@@ -20,8 +20,20 @@ import { AGENTEN, DIENSTSTAND } from '../daten/agenten.js'
 import { STUFEN_IDS } from '../daten/einrichtung.js'
 
 // Die Fassung steht im Schlüssel. Ändert sich der Aufbau der Akte grundlegend,
-// wird der Schlüssel hochgezählt statt alte Daten schiefzubiegen.
+// wird der Schlüssel hochgezählt statt alte Daten schiefzubiegen. Die
+// Besprechungen kamen später dazu, ohne die Zahl zu erhöhen: Ein fehlendes
+// Feld ergänzt inFormBringen, und eine Akte von gestern soll heute nicht
+// verloren gehen, nur weil es einen Bereich mehr gibt.
 const SCHLUESSEL = 'va-kontrollzentrum.firma.v1'
+
+// Wie viele Besprechungen aufgehoben werden. Es sind Protokolle, keine Akten -
+// die letzten zehn genügen, und der Browserspeicher ist klein.
+const BESPRECHUNGEN_MAX = 10
+
+// Wie viele fremde Meldungen eine Stelle bei ihrem Auftrag mitbekommt.
+// Bewusst knapp: Es ist Umgebungswissen, nicht die Arbeitsgrundlage - und jeder
+// Eintrag kostet bei jedem einzelnen Auftrag Geld.
+const AUSHANG_MAX = 5
 
 // Eine leere Stelle.
 function leerePosition() {
@@ -46,6 +58,11 @@ function leereAkte() {
     konzept: '',
     konzeptDatum: null,
     positionen,
+    besprechungen: [], // die letzten Runden, neueste zuletzt
+    // Ob das hier die Beispielakte ist. Wird gespeichert, weil man es sonst
+    // nach dem Neuladen nicht mehr wüsste - und dann hielte jemand irgendwann
+    // die erfundene "Assistenz Mayer" für seine eigene Firma.
+    beispiel: false,
   }
 }
 
@@ -60,6 +77,7 @@ function inFormBringen(roh) {
   frisch.idee = typeof roh.idee === 'string' ? roh.idee : ''
   frisch.konzept = typeof roh.konzept === 'string' ? roh.konzept : ''
   frisch.konzeptDatum = typeof roh.konzeptDatum === 'string' ? roh.konzeptDatum : null
+  frisch.beispiel = Boolean(roh.beispiel)
 
   for (const a of AGENTEN) {
     const alt = roh.positionen?.[a.id]
@@ -85,7 +103,52 @@ function inFormBringen(roh) {
         }))
     }
   }
+
+  // Besprechungen. Eine Runde ohne Beiträge ist keine - die fällt weg.
+  if (Array.isArray(roh.besprechungen)) {
+    frisch.besprechungen = roh.besprechungen
+      .filter((b) => b && typeof b.thema === 'string' && Array.isArray(b.beitraege))
+      .map((b) => ({
+        thema: b.thema,
+        datum: typeof b.datum === 'string' ? b.datum : null,
+        tisch: Array.isArray(b.tisch) ? b.tisch.filter((id) => frisch.positionen[id]) : [],
+        beitraege: b.beitraege
+          .filter((e) => e && frisch.positionen[e.agentId] && typeof e.text === 'string')
+          .map((e) => ({ agentId: e.agentId, text: e.text, vorsitz: Boolean(e.vorsitz) })),
+      }))
+      .filter((b) => b.beitraege.length > 0)
+      .slice(-BESPRECHUNGEN_MAX)
+  }
+
   return frisch
+}
+
+// Aus einer Besprechung den Beschluss herausziehen - für den Aushang und für
+// die Übersicht. Er steht im Beitrag der Stelle, die den Vorsitz hatte, unter
+// der Überschrift "### Beschluss".
+//
+// Zwei Fälle, die auseinandergehalten werden müssen:
+//   Kein Vorsitz-Beitrag  -> die Runde wurde abgebrochen, bevor jemand den
+//                            Beschluss geschrieben hat. Dann gibt es keinen,
+//                            und der letzte Wortbeitrag ist auch keiner.
+//   Vorsitz ohne Überschrift -> das Modell hat sich nicht an den Aufbau
+//                            gehalten. Dann gilt sein ganzer Beitrag; lieber
+//                            zu viel anzeigen als eine leere Zeile.
+export function beschlussAus(besprechung) {
+  const vorsitz = besprechung?.beitraege?.find((b) => b.vorsitz)
+  if (!vorsitz?.text?.trim()) return ''
+
+  const ab = vorsitz.text.indexOf('### Beschluss')
+  return (ab >= 0 ? vorsitz.text.slice(ab) : vorsitz.text).trim()
+}
+
+// Ein Datum, wie es im Aushang stehen soll. Bewusst hier und nicht im Prompt
+// gebaut: Die Zeitzone der Gründerin kennt nur ihr Browser. Ein Datum, das der
+// Server ausrechnet, kann einen Tag danebenliegen.
+function alsTag(iso) {
+  if (!iso) return ''
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('de-DE')
 }
 
 function ausSpeicherLesen() {
@@ -243,6 +306,27 @@ export function useFirma() {
     [aendere],
   )
 
+  // --- Besprechungen -------------------------------------------------------
+  //
+  // Eine Besprechung gehört keiner einzelnen Stelle, deshalb steht sie neben
+  // den Positionen und nicht in einer davon. Sie landet auch in keinem
+  // Protokoll: Die Runde ist ein Dokument für sich, und was aus ihr für die
+  // anderen zählt, holt sich der Aushang von hier.
+  const besprechungSichern = useCallback((thema, tisch, beitraege) => {
+    if (!beitraege.length) return
+    setFirma((alt) => ({
+      ...alt,
+      besprechungen: [
+        ...alt.besprechungen,
+        { thema, tisch, beitraege, datum: new Date().toISOString() },
+      ].slice(-BESPRECHUNGEN_MAX),
+    }))
+  }, [])
+
+  const besprechungenLeeren = useCallback(() => {
+    setFirma((alt) => ({ ...alt, besprechungen: [] }))
+  }, [])
+
   // --- Ganze Akte ----------------------------------------------------------
 
   const positionZuruecksetzen = useCallback((agentId) => {
@@ -253,6 +337,15 @@ export function useFirma() {
   }, [])
 
   const akteLeeren = useCallback(() => setFirma(leereAkte()), [])
+
+  // Die Beispielakte. Sie kommt von außen herein, weil das Modul erst beim
+  // Klick nachgeladen wird - 30 KB, die niemand herunterladen soll, der sie
+  // nicht ansieht. Durch inFormBringen läuft sie wie jede eingelesene Akte:
+  // Was dort nicht hineinpasst, fällt weg, und "scharf" gilt nur mit
+  // Dienstanweisung. Ein Beispiel darf sich keine Sonderrechte nehmen.
+  const beispielLaden = useCallback((roh) => {
+    setFirma({ ...inFormBringen(roh), beispiel: true })
+  }, [])
 
   const akteEinlesen = useCallback((roh) => {
     setFirma(inFormBringen(roh))
@@ -293,6 +386,59 @@ export function useFirma() {
     [firma],
   )
 
+  // --- Der Aushang ---------------------------------------------------------
+  //
+  // Was eine Stelle bei ihrem Auftrag über die anderen mitbekommt: je Kollegin
+  // im Dienst ihre letzte Meldung, dazu der Beschluss der letzten Besprechung.
+  //
+  // Warum je Stelle nur EINE Meldung: Sonst füllt eine vielbeschäftigte Stelle
+  // den ganzen Aushang und die übrigen sieben kommen nie vor. Wer mehr wissen
+  // will, ruft eine Besprechung ein - dort reden alle in voller Länge.
+  //
+  // Warum der Beschluss vorn steht und nicht mitsortiert wird: Er ist das
+  // Einzige, worauf sich das ganze Haus geeinigt hat. Er darf nicht wegen
+  // seines Alters aus der Liste fallen.
+  const aushang = useCallback(
+    (ausserAgentId) => {
+      const meldungen = []
+
+      for (const a of AGENTEN) {
+        if (a.id === ausserAgentId) continue // die eigene steht schon im Verlauf
+        const pos = firma.positionen[a.id]
+        if (!pos?.scharf) continue
+        const letzte = pos.protokoll[pos.protokoll.length - 1]
+        if (!letzte) continue
+        meldungen.push({
+          von: `${a.name} · ${a.stelle}`,
+          wann: alsTag(letzte.datum),
+          worum: letzte.auftrag,
+          ergebnis: letzte.antwort,
+          zeit: Date.parse(letzte.datum) || 0,
+        })
+      }
+
+      meldungen.sort((x, y) => y.zeit - x.zeit)
+
+      const letzteRunde = firma.besprechungen[firma.besprechungen.length - 1]
+      const beschluss = letzteRunde ? beschlussAus(letzteRunde) : ''
+      const kopf = beschluss
+        ? [
+            {
+              von: 'Beschluss der letzten Besprechung',
+              wann: alsTag(letzteRunde.datum),
+              worum: letzteRunde.thema,
+              ergebnis: beschluss,
+            },
+          ]
+        : []
+
+      return [...kopf, ...meldungen]
+        .slice(0, AUSHANG_MAX)
+        .map(({ zeit, ...rest }) => rest) // die Sortierhilfe muss nicht mitreisen
+    },
+    [firma],
+  )
+
   const hatKonzept = Boolean(firma.konzept.trim())
 
   return {
@@ -316,9 +462,30 @@ export function useFirma() {
     // Betrieb
     protokollAnhaengen,
     protokollLeeren,
+    aushang,
+    // Besprechung
+    besprechungen: firma.besprechungen,
+    besprechungSichern,
+    besprechungenLeeren,
     // Akte
     akteLeeren,
     akteEinlesen,
+    beispielLaden,
+    istBeispiel: firma.beispiel,
+    // Ob überhaupt schon etwas dasteht - entscheidet, ob das Beispiel
+    // angeboten wird oder ob es jemandem die eigene Arbeit überschriebe.
+    istLeer:
+      !firma.idee.trim() &&
+      !firma.konzept.trim() &&
+      !firma.name.trim() &&
+      firma.besprechungen.length === 0 &&
+      AGENTEN.every((a) => {
+        const pos = firma.positionen[a.id]
+        return (
+          !pos.dienstanweisung.trim() &&
+          STUFEN_IDS.every((id) => !pos.antworten[id]?.trim())
+        )
+      }),
     // Abgeleitet
     dienststand,
     fortschritt,

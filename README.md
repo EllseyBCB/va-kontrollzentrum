@@ -11,8 +11,25 @@ führt in drei Stufen dorthin:
 3. **Betrieb** – wer im Dienst ist, nimmt Aufträge an und hält sich dabei an
    seine Anweisung.
 
+Quer dazu liegt die **Besprechung**: Wenn eine Frage mehrere Stellen betrifft,
+setzen sie sich an einen Tisch.
+
 Alles bleibt gespeichert. Wer den Browser schließt, findet seine Belegschaft
 wieder vor.
+
+## Erst mal ansehen
+
+Über der Reiterzeile steht **Beispiel laden**: eine fertige Firma zum
+Durchklicken – Konzept, sechs besetzte Stellen mit Dienstanweisungen, erledigte
+Aufträge und zwei Besprechungen mit Beschluss. Das kostet keinen einzigen
+Aufruf und braucht keinen Schlüssel, weil alles schon dasteht.
+
+„Assistenz Mayer" ist erfunden. Solange die Beispielakte geladen ist, sagt das
+ein Band über der Seite – die Firma sieht echt genug aus, dass man sie nach
+zehn Minuten sonst für die eigene hält. **Beispiel entfernen** räumt sie weg.
+
+Das Angebot erscheint nur, solange die Akte leer ist. Wer angefangen hat, soll
+sich seine Arbeit nicht mit einem Fehlklick überschreiben.
 
 ## Einrichten
 
@@ -54,6 +71,35 @@ daneben, nicht im Feld. Du übernimmst ihn oder verwirfst ihn.
 Der vierte Schritt ist der wichtigste. Eine Stelle ohne gezogene Grenze sollte
 nicht scharf gestellt werden.
 
+## Die Stellen reden miteinander
+
+Acht Stellen, von denen keine weiß, was die anderen tun, sind kein Unternehmen,
+sondern acht Einzelkämpfer. Dagegen gibt es zwei Mittel:
+
+**Der Aushang.** Bei jedem Auftrag geht mit, woran die anderen zuletzt
+gearbeitet haben – je Stelle im Dienst ihre letzte Meldung, dazu der Beschluss
+der letzten Besprechung. Die Finanzen rechnen dann nicht mehr mit Preisen, die
+der Markt vorgestern verworfen hat. Unter „Aushang ansehen" steht, was
+mitgeschickt wird: Was ungefragt in einen Aufruf hineingeht, soll man nachlesen
+können.
+
+**Die Besprechung.** Ein Thema, mehrere Stellen, reihum. Jede hört, was die
+Vorrednerinnen gesagt haben, und darf ihnen widersprechen – ausdrücklich, mit
+Namen. Wer zuletzt spricht, schreibt den Beschluss: Entscheidung, wer was bis
+wann tut, und was offen blieb.
+
+Die Reihenfolge ist die der acht Stellen, mit einer Ausnahme: **Die
+Geschäftsführung spricht zuletzt.** Wer den Beschluss schreibt, muss alle gehört
+haben – und eine Geschäftsführung, die als Erste ihre Meinung sagt, bekommt von
+den anderen Zustimmung statt Widerspruch.
+
+Am Tisch sitzen nur Stellen, die scharf gestellt sind, und jede bleibt an ihre
+Dienstanweisung gebunden. Was sie im Betrieb nicht darf, verspricht sie auch am
+Tisch nicht.
+
+Eine Besprechung ist ein Aufruf je Teilnehmerin. Vier gut gewählte Stellen sagen
+mehr als acht, von denen die Hälfte nichts beizutragen hat.
+
 ## Scharf stellen
 
 Der Schalter geht nur um, wenn eine Dienstanweisung vorliegt. Sie entsteht am
@@ -73,16 +119,22 @@ sie auch selbst. Zurückziehen löscht nichts: die Stelle ruht dann nur.
 ## Kosten
 
 Ein vollständiger Konzeptdurchlauf sind acht Aufrufe – mit `claude-opus-5` grob
-20 bis 60 Cent. Ein Vorschlag zu einem Einrichtungsschritt oder ein Auftrag im
-Betrieb ist deutlich kleiner. Wer viel ausprobiert, stellt in der `.env` auf
+20 bis 60 Cent. Eine Besprechung ist ein Aufruf je Teilnehmerin, also bei vier
+Stellen ungefähr ein halber Konzeptdurchlauf. Ein Vorschlag zu einem
+Einrichtungsschritt oder ein Auftrag im Betrieb ist deutlich kleiner.
+
+Wer viel ausprobiert, stellt in der `.env` auf
 `MODELL=claude-sonnet-5` um – für die veröffentlichte Fassung steht dasselbe in
 `wrangler.toml`.
 
 ## Die veröffentlichte Fassung
 
-<https://ellseybcb.github.io/va-kontrollzentrum/> zeigt die Oberfläche. GitHub
-Pages liefert reine Dateien aus und kann nichts ausführen – die vier Endpunkte
-laufen deshalb als **Cloudflare Worker** daneben (`worker/index.js`).
+<https://ellseybcb.github.io/va-kontrollzentrum/> zeigt die Oberfläche. Wer
+dort ankommt, lädt am besten zuerst das Beispiel – dann ist die Seite
+vollständig zu besichtigen, ohne einen Schlüssel einzutippen.
+
+GitHub Pages liefert reine Dateien aus und kann nichts ausführen – die
+Endpunkte laufen deshalb als **Cloudflare Worker** daneben (`worker/index.js`).
 
 Der Unterschied, auf den es dort ankommt:
 

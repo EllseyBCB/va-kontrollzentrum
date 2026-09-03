@@ -1,10 +1,11 @@
-// Die Hauptkomponente. Sie hält zwei Dinge zusammen:
+// Die Hauptkomponente. Sie hält drei Dinge zusammen:
 //
 //   firma      - was bleibt: Idee, Konzept, die acht Stellen, ihre Anweisungen
 //   durchlauf  - was flüchtig ist: der laufende Schreibvorgang des Konzepts
+//   sitzung    - die laufende Besprechung, ebenso flüchtig
 //
-// Und sie entscheidet, welcher der drei Bereiche gerade zu sehen ist. Mehr
-// nicht: Gearbeitet wird in den Haken, angezeigt in den Komponenten.
+// Und sie entscheidet, welcher Bereich gerade zu sehen ist. Mehr nicht:
+// Gearbeitet wird in den Haken, angezeigt in den Komponenten.
 
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import Kopfzeile from './komponenten/Kopfzeile.jsx'
@@ -16,9 +17,12 @@ import ErgebnisBereich from './komponenten/ErgebnisBereich.jsx'
 import Belegschaft from './komponenten/Belegschaft.jsx'
 import Einrichtung from './komponenten/Einrichtung.jsx'
 import Betrieb from './komponenten/Betrieb.jsx'
+import Besprechung from './komponenten/Besprechung.jsx'
+import Beispielband from './komponenten/Beispielband.jsx'
 import { AGENTEN, agentNach } from './daten/agenten.js'
 import { useFirma } from './zustand/useFirma.js'
 import { useDurchlauf } from './zustand/useDurchlauf.js'
+import { useBesprechung } from './zustand/useBesprechung.js'
 import { pruefeVerbindung } from './dienste/api.js'
 import { holeSchluessel, beobachte } from './dienste/schluessel.js'
 
@@ -29,6 +33,11 @@ export default function App() {
     setIdee: firma.setIdee,
     konzeptSichern: firma.konzeptSichern,
   })
+
+  // Die laufende Besprechung. Steht hier und nicht in der Komponente, damit
+  // eine angefangene Runde einen Reiterwechsel überlebt - eine Besprechung
+  // dauert Minuten, und in der Zeit schaut man schon mal woanders nach.
+  const sitzung = useBesprechung(firma)
 
   // Man kommt dort an, wo man steht: Wer schon jemanden im Dienst hat, will
   // arbeiten lassen; wer ein Konzept hat, will besetzen; sonst geht es von vorn
@@ -123,7 +132,12 @@ export default function App() {
         }}
         konzeptFertig={firma.hatKonzept}
         scharfeAnzahl={firma.scharfeAnzahl}
+        besprechungenAnzahl={firma.besprechungen.length}
       />
+
+      {/* Steht über allen Bereichen: das Angebot, sich das Beispiel anzusehen -
+          und, sobald es geladen ist, der Hinweis, dass es erfunden ist. */}
+      <Beispielband firma={firma} />
 
       {/* Nur in der veröffentlichten Fassung: dort hält die API keinen Schlüssel. */}
       {schluesselNoetig && <Zugang />}
@@ -184,6 +198,20 @@ export default function App() {
             {hinweis}
             <Betrieb
               firma={firma}
+              zurBelegschaft={() => setReiter('belegschaft')}
+              serverBereit={serverBereit}
+              apiHinweis={apiHinweis}
+            />
+          </>
+        )}
+
+        {/* --------------------------------------------------- Besprechung */}
+        {reiter === 'besprechung' && (
+          <>
+            {hinweis}
+            <Besprechung
+              firma={firma}
+              sitzung={sitzung}
               zurBelegschaft={() => setReiter('belegschaft')}
               serverBereit={serverBereit}
               apiHinweis={apiHinweis}

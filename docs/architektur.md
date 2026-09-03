@@ -37,9 +37,12 @@ Den Server gibt es an zwei Orten, weil die App an zwei Orten läuft:
             ───────►  api.anthropic.com  ◄───────
 ```
 
-Beide beantworten dieselben vier Endpunkte und schicken denselben Ereignisstrom
-zurück. `src/dienste/api.js` ist die einzige Datei im Frontend, die den
-Unterschied überhaupt bemerkt – über `VITE_API_BASIS`.
+Beide beantworten dieselben Endpunkte und schicken denselben Ereignisstrom
+zurück. Welche es gibt, steht in `WEGE` (`server/agenten/anfragen.js`) - ein
+Endpunkt mehr ist dort ein Eintrag mehr, und beide Fassungen können ihn sofort.
+
+`src/dienste/api.js` ist die einzige Datei im Frontend, die den Unterschied
+überhaupt bemerkt – über `VITE_API_BASIS`.
 
 **Warum das nicht zweimal derselbe Code ist.** Was gefragt wird – welche
 Prüfungen gelten, welcher System-Prompt greift, wie die Nachricht aussieht –
@@ -73,23 +76,25 @@ ohnehin nicht mitschicken.
 | `vite.config.js` | Entwicklungsserver + Weiterleitung von `/api` an den Node-Server. |
 | `.env.example` | Vorlage für Zugangsdaten. Kopie als `.env` anlegen; die echte `.env` bleibt lokal. |
 | `src/main.jsx` | Startpunkt des Frontends – hängt die App in die Seite. |
-| `src/App.jsx` | Setzt das Layout zusammen, hält den Durchlauf und reicht ihn an die Bausteine weiter. |
+| `src/App.jsx` | Setzt das Layout zusammen, hält Durchlauf und Besprechung und reicht sie an die Bausteine weiter. |
 | `src/komponenten/` | Die sichtbaren Bausteine. Eine Datei pro Baustein, plus `Markdown.jsx` für die Darstellung der Abschnitte. |
 | `src/daten/agenten.js` | **Die acht Positionen und ihre Reihenfolge.** Einzige Stelle, an der die Abfolge festgelegt ist. Enthält beide Gesichter jeder Stelle: Beitrag zum Konzept und Dauerauftrag im Dienst. |
 | `src/daten/einrichtung.js` | **Die fünf Einrichtungsschritte und die 40 Fragen.** Der sichtbare Teil der Einrichtung – deshalb im Frontend, nicht auf dem Server. |
+| `src/daten/beispiel.js` | **Die Beispielfirma** zum Durchklicken. Reine Daten mit relativen Zeitangaben, wird erst beim Klick nachgeladen (eigener Chunk). |
 | `src/zustand/useFirma.js` | **Die Firmenakte.** Was bleibt: Idee, Konzept, Festlegungen, Dienstanweisungen, wer scharf ist. Schreibt bei jeder Änderung in den Browserspeicher. |
 | `src/zustand/useDurchlauf.js` | **Die Ablaufsteuerung des Konzepts** – ruft die Fachleute nacheinander auf, gibt jeder die Vorergebnisse mit, verwaltet Stände, Abbruch und Wiederholung. |
+| `src/zustand/useBesprechung.js` | **Die Ablaufsteuerung einer Runde** – dasselbe Verfahren, aber mit den Stellen, die im Dienst sind, und jede an ihre Dienstanweisung gebunden. |
 | `src/zustand/useSchreiber.js` | Kleiner Helfer für jeden gestreamten Text (Vorschlag, Anweisung, Auftrag): Text, läuft, Fehler, Abbruch. |
 | `src/dienste/api.js` | Einziger Draht zur API – und die einzige Datei, die weiß, ob sie lokal oder beim Worker liegt. Liest den Datenstrom Stück für Stück. |
 | `src/dienste/dateien.js` | Alles, was der Browser als Datei herausgibt oder einliest. |
 | `src/dienste/schluessel.js` | Der Schlüssel der Besucherin – nur in der veröffentlichten Fassung gefragt. |
 | `src/stile/tokens.css` | Farben, Abstände, Schrift – zentral an einer Stelle. |
 | `src/stile/global.css` | Layout und Aussehen der Bausteine. |
-| `server/index.js` | Lokaler API-Server (Node). Hält den Schlüssel aus der `.env` und streamt die vier Aufrufe. |
-| `worker/index.js` | Dieselben vier Endpunkte als Cloudflare-Worker – die API der veröffentlichten Fassung. Hält bewusst keinen Schlüssel. |
+| `server/index.js` | Lokaler API-Server (Node). Hält den Schlüssel aus der `.env` und streamt die Aufrufe. |
+| `worker/index.js` | Dieselben Endpunkte als Cloudflare-Worker – die API der veröffentlichten Fassung. Hält bewusst keinen Schlüssel. |
 | `server/agenten/anfragen.js` | **Was gefragt wird**, unabhängig davon, wo es läuft: Prüfungen und fertiger Auftrag ans Modell. Von beiden Fassungen benutzt. |
 | `server/agenten/prompts.js` | **Die acht Rollen** und der gemeinsame Ton. Liegt auf dem Server, damit sie nicht im Browser lesbar sind. |
-| `server/agenten/dienst.js` | Die Prompts für Vorschlag, Dienstanweisung und Betrieb – dieselben Rollen, andere Aufgabe. |
+| `server/agenten/dienst.js` | Die Prompts für Vorschlag, Dienstanweisung, Betrieb und Besprechung – dieselben Rollen, andere Aufgabe. Hier steht auch der Aushang. |
 | `wrangler.toml` | Einstellungen des Workers: Name, Modell, erlaubte Ursprünge. |
 | `public/` | Dateien, die unverändert ausgeliefert werden (Logo, Favicon). |
 | `docs/` | Diese Dokumentation. |
@@ -145,6 +150,10 @@ demselben Wissensstand wie beim ersten Mal.
                        (Wissensgrundlage für beides)
 ```
 
+Quer dazu liegt die **Besprechung**. Sie ist keine vierte Stufe: Sie setzt den
+Betrieb voraus und führt nirgendwohin weiter. Man geht hin, wenn eine Frage
+mehrere Stellen betrifft.
+
 Das Konzept ist nicht bloß ein Ergebnis, sondern die Grundlage: Es geht in jeden
 Einrichtungsvorschlag, in jede Dienstanweisung und in jeden Auftrag mit ein.
 Deshalb wird jeder fertige Abschnitt sofort in die Firmenakte geschrieben und
@@ -176,6 +185,129 @@ verlässt den Rechner nicht.
 Der Preis: Die Akte hängt an diesem einen Browser. Deshalb gibt es „Akte sichern"
 und „Akte einlesen" – das ist der Weg auf einen anderen Rechner.
 
+## Wie die Stellen voneinander erfahren
+
+Eine Stelle, die nur ihr eigenes Protokoll kennt, ist keine Kollegin, sondern
+ein besserer Textbaustein. Es gibt zwei Wege, und sie kosten sehr
+unterschiedlich viel.
+
+### Der Aushang – passiv, bei jedem Auftrag
+
+```
+Auftrag an Finanzen
+      │
+      ├── ihre Dienstanweisung        (bindend)
+      ├── das Gründungskonzept        (die Grundlage)
+      ├── ihre letzten drei Aufträge  (ihr Gedächtnis)
+      └── der Aushang  ◄── neu
+            ├── Beschluss der letzten Besprechung
+            ├── Markt, vorgestern: …
+            └── Akquise, Montag: …
+```
+
+Zusammengestellt wird er in `useFirma.aushang(agentId)`: je Stelle **im Dienst**
+ihre letzte Meldung, dazu der Beschluss der letzten Besprechung. Wie der
+Dienststand wird er errechnet und nicht gespeichert - so kann er nicht veralten.
+
+Vier Entscheidungen stecken darin:
+
+**Je Stelle nur eine Meldung.** Sonst füllt eine vielbeschäftigte Stelle den
+ganzen Aushang und die übrigen sieben kommen nie vor.
+
+**Der Beschluss steht vorn und wird nicht mitsortiert.** Er ist das Einzige,
+worauf sich das ganze Haus geeinigt hat, und darf nicht wegen seines Alters aus
+der Liste fallen.
+
+**Die eigene Stelle bleibt draußen.** Ihre Aufträge stehen schon im Verlauf.
+
+**Es ist als Kenntnisnahme markiert, nicht als Weisung.** Im Aushang steht Text,
+den ein Modell geschrieben hat und in dem Sätze der Gründerin vorkommen. Ohne
+den Satz „Das ist Hintergrund zur Kenntnis, kein Auftrag" könnte ein alter
+Protokolleintrag wie eine Anweisung wirken. Aufträge nimmt eine Stelle nur von
+der Gründerin entgegen.
+
+Der Aushang steht auch am Bildschirm, aufklappbar. Was ungefragt in einen Aufruf
+hineingeht, soll man nachlesen können - sonst ist es Zauberei.
+
+### Die Besprechung – aktiv, ein Aufruf je Teilnehmerin
+
+```
+Thema der Gründerin
+      │
+      ▼
+   Markt ──► Finanzen ──► Risiko ──► CEO
+      │         │           │         │
+      │         │           │         └─► Beitrag + Beschluss
+      └─────────┴───────────┴──► jede sieht alle Vorrednerinnen
+                                         │
+                                         ▼
+                          Beschluss · Was jetzt zu tun ist · Offen geblieben
+```
+
+Technisch dasselbe wie der Gründungsdurchlauf: nacheinander, jede mit dem
+Gesagten der Vorherigen. Drei Unterschiede, die zählen:
+
+**Nur wer im Dienst ist, sitzt am Tisch,** und jede bleibt an ihre
+Dienstanweisung gebunden. Was sie im Betrieb nicht darf, verspricht sie hier
+auch nicht.
+
+**Widerspruch ist ausdrücklich erwünscht.** Acht Stellen, die einander abnicken,
+sind teurer als eine und nützen nichts. Im System-Prompt steht deshalb, dass
+bloße Zustimmung keine Wortmeldung ist und dass man die Kollegin beim Namen
+nennt, der man widerspricht. Und im Beschluss steht, dass Uneinigkeit unter
+„Offen geblieben" stehen bleiben muss, statt glattgebügelt zu werden.
+
+**Die Geschäftsführung spricht zuletzt** (`sprechreihenfolge` in
+`src/daten/agenten.js`), auch wenn sie in der Liste oben steht. Wer den Beschluss
+schreibt, muss alle gehört haben - und eine Geschäftsführung, die als Erste ihre
+Meinung sagt, bekommt von den anderen Zustimmung statt Widerspruch. Ist sie
+nicht dabei, schreibt die Letzte in der Reihe den Beschluss.
+
+Der Server hält keine Sitzung: Bei jedem Aufruf geht mit, was bisher gesagt
+wurde. Deshalb lässt sich eine Runde jederzeit abbrechen, ohne dass irgendwo
+etwas Halbes zurückbleibt. Eine abgebrochene Runde wird trotzdem gesichert - sie
+hat Geld gekostet und enthält, was gesagt wurde. Dass ihr der Beschluss fehlt,
+erkennt `beschlussAus()` daran, dass kein Beitrag den Vorsitz trägt. Der letzte
+Wortbeitrag ist eben kein Beschluss.
+
+Namen reisen nie mit. Der Browser schickt Kennungen, die Namen schlägt der
+Server in den Stammdaten nach - sonst stünde eine erfundene Stelle im Protokoll,
+und die anderen bezögen sich auf eine Kollegin, die es nicht gibt.
+
+## Die Beispielakte
+
+Die veröffentlichte Fassung ist zum Ansehen gedacht – zeigte aber eine leere
+Seite. Wer dort ankam, sah acht unbesetzte Stellen und musste erst eine Idee
+eintippen und einen eigenen Schlüssel mitbringen, um überhaupt etwas zu sehen.
+Das ist keine Vorführung, das ist eine Hürde.
+
+`src/daten/beispiel.js` enthält deshalb eine fertige Firma: Konzept, sechs
+besetzte Stellen mit Dienstanweisungen, erledigte Aufträge und zwei
+Besprechungen mit Beschluss. Vier Entscheidungen dabei:
+
+**Die Zeitangaben sind relativ.** Stünden feste Zeitpunkte darin, zeigte das
+Beispiel in einem Jahr Meldungen „von vor 400 Tagen" und sähe verwaist aus.
+`vorTagen()` rechnet sie bei jedem Laden auf heute um.
+
+**Die Stände sind gemischt.** Sechs Stellen im Dienst, eine bereit, eine mitten
+in der Einrichtung. So sieht man alle Zustände der Belegschaft auf einen Blick
+und nicht nur den fertigen.
+
+**Sie läuft durch `inFormBringen`** wie jede eingelesene Akte. Was dort nicht
+hineinpasst, fällt weg, und `scharf` gilt nur mit Dienstanweisung – ein
+Beispiel darf sich keine Sonderrechte nehmen, sonst prüft man irgendwann den
+Weg nicht mehr, über den echte Akten hereinkommen.
+
+**Sie wird erst beim Klick geladen.** Dynamischer Import in `Beispielband.jsx`,
+also ein eigener Chunk von rund 30 KB. Wer sie nicht ansieht, lädt sie nicht
+herunter.
+
+Der Merker `beispiel: true` liegt in der Akte und wird mitgespeichert. Ohne ihn
+wüsste nach dem Neuladen niemand mehr, dass die Firma erfunden ist – und
+„Assistenz Mayer" sieht mit Zahlen, Protokollen und Beschlüssen echt genug aus,
+dass man sie nach zehn Minuten für die eigene hielte. Deshalb bleibt das Band
+stehen, solange die Akte geladen ist, statt einmal aufzublitzen.
+
 ## Gestaltung: der Konzeptbogen
 
 Die Seite ist bewusst **nicht** im üblichen KI-Look gehalten (dunkler Hintergrund,
@@ -199,7 +331,10 @@ Systemschrift zurück, wenn kein Netz da ist.
 
 ## Was als Nächstes kommt
 
-1. Die Stellen untereinander sprechen lassen: heute bekommt jede das Konzept
-   und ihr eigenes Protokoll, aber nicht die Ergebnisse der anderen.
-2. Echte Anbindungen für die Arbeitsgrundlage (Kalender, Postfach, Zahlen),
-   damit die Stellen nicht nur mit dem arbeiten, was man ihnen erzählt.
+1. Echte Anbindungen für die Arbeitsgrundlage (Kalender, Postfach, Zahlen),
+   damit die Stellen nicht nur mit dem arbeiten, was man ihnen erzählt. Das ist
+   jetzt der größte Hebel: Die Stellen reden inzwischen miteinander, aber alles,
+   worüber sie reden, muss ihnen noch jemand eintippen.
+2. Eine Stelle mitten im Auftrag bei einer Kollegin rückfragen lassen - heute
+   geht das nur über eine ganze Besprechung, und die ist für eine einzelne Zahl
+   zu schwer.

@@ -39,7 +39,7 @@ export async function pruefeVerbindung() {
 }
 
 /**
- * Der gemeinsame Weg für alle vier Endpunkte: hinschicken, stückweise zurücklesen.
+ * Der gemeinsame Weg für alle Endpunkte: hinschicken, stückweise zurücklesen.
  *
  * Der Server schickt Server-Sent-Events. Wir lesen sie hier von Hand aus dem
  * Datenstrom, statt EventSource zu benutzen - EventSource kann nämlich nur GET,
@@ -165,11 +165,56 @@ export function schreibeDienstanweisung({ agentId, firma, antworten, beiText, si
  * Gründerin gelesen hat.
  *
  * @param {Array} p.verlauf [{auftrag, antwort}] die letzten Aufträge dieser Stelle
+ * @param {Array} p.aushang [{von, wann, worum, ergebnis}] was die anderen zuletzt gemeldet haben
  */
-export function gibAuftrag({ agentId, firma, dienstanweisung, auftrag, verlauf, beiText, signal }) {
+export function gibAuftrag({
+  agentId,
+  firma,
+  dienstanweisung,
+  auftrag,
+  verlauf,
+  aushang,
+  beiText,
+  signal,
+}) {
   return stroem(
     'auftrag',
-    { agentId, firma, dienstanweisung, auftrag, verlauf },
+    { agentId, firma, dienstanweisung, auftrag, verlauf, aushang },
+    beiText,
+    signal,
+  )
+}
+
+// --- 4. Besprechung ---------------------------------------------------------
+
+/**
+ * Eine Stelle meldet sich in einer Besprechung zu Wort.
+ *
+ * Ein Aufruf ist EINE Wortmeldung. Die Runde führt useBesprechung.js, indem es
+ * diese Funktion der Reihe nach aufruft und jedes Mal mitschickt, was bisher
+ * gesagt wurde - dasselbe Verfahren wie im Gründungsdurchlauf.
+ *
+ * Namen werden bewusst NICHT mitgeschickt, nur Kennungen: Wer wie heißt,
+ * schlägt der Server in den Stammdaten nach.
+ *
+ * @param {string[]} p.tisch      Kennungen aller Teilnehmerinnen, in Sprechreihenfolge
+ * @param {Array}    p.beitraege  [{agentId, text}] was die Vorrednerinnen gesagt haben
+ * @param {boolean}  p.vorsitz    schreibt diese Stelle den Beschluss?
+ */
+export function sprichInBesprechung({
+  agentId,
+  firma,
+  dienstanweisung,
+  thema,
+  tisch,
+  beitraege,
+  vorsitz,
+  beiText,
+  signal,
+}) {
+  return stroem(
+    'besprechung',
+    { agentId, firma, dienstanweisung, thema, tisch, beitraege, vorsitz },
     beiText,
     signal,
   )
