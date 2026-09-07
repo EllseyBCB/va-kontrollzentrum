@@ -1150,3 +1150,80 @@ body {
   border-left: 2px solid var(--akzent);
   border-bottom-color: var(--linie);
 }
+
+/* ---------- Die Rückfrage ---------------------------------------------------
+
+   Zwei Auswahlzeilen übereinander - erst wer fragt, dann wen. Beide benutzen
+   dieselbe Markenleiste wie der Betrieb; neu ist nur die Beschriftung davor,
+   denn zwei gleich aussehende Leisten ohne Aufschrift wären ein Rätsel. */
+
+.wahlzeile {
+  margin-bottom: var(--luft);
+}
+
+.wahlzeile__marke {
+  margin: 0 0 4px;
+  font-family: var(--grotesk);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--akzent);
+}
+
+/* Die Beschriftung über einem Feld, das leer bleiben darf. */
+.beiwerk {
+  display: block;
+  margin: var(--luft) 0 4px;
+  font-family: var(--grotesk);
+  font-size: 0.8rem;
+  color: var(--tinte-leise);
+}
+.beiwerk__zusatz {
+  font-style: italic;
+  color: var(--tinte-fein);
+}
+
+.feld--klein {
+  font-family: var(--grotesk);
+  font-size: 0.9rem;
+}
+
+/* Die Antwort. Bewusst schmaler und leiser gesetzt als ein Arbeitsergebnis im
+   Betrieb: Es ist ein Zuruf über den Flur, kein Bericht. Die Akzentlinie links
+   sagt trotzdem, dass hier jemand spricht - dieselbe Sprache wie beim Vorsitz
+   in der Besprechung. */
+.zuruf {
+  margin-top: var(--luft-weit);
+  padding: 0 0 var(--luft) var(--luft);
+  border-left: 2px solid var(--akzent);
+  max-width: var(--spalte);
+}
+
+.zuruf__kopf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--luft-eng);
+  margin: 0 0 var(--luft-eng);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--linie);
+}
+.zuruf__ziffer {
+  font-family: var(--serif);
+  font-size: 0.9rem;
+  color: var(--tinte-fein);
+}
+.zuruf__name {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+.zuruf__stelle {
+  font-family: var(--grotesk);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tinte-fein);
+}
+
+.zuruf .markdown > :first-child { margin-top: 0; }

@@ -263,6 +263,24 @@ export function beispielAkte() {
         ],
         "datum": vorTagen(0)
       }
+    ],
+    "rueckfragen": [
+      {
+        "fragerId": "angebot",
+        "agentId": "finanzen",
+        "frage": "Wie weit darf ich beim Stundensatz runter, wenn eine Kanzlei 20 Stunden fest abnimmt?",
+        "kontext": "Ich schreibe gerade das Angebot f\u00fcr Kanzlei Weber.",
+        "antwort": "Untergrenze festlegen darf ich nicht, das ist deine Entscheidung \u2013 Preise sind laut meiner Anweisung nicht mein Bereich. Rechnerisch: Bei 480 Euro Fixkosten und 22 Stunden Zielauslastung liegt der Deckungspunkt bei 10,7 Stunden. Bei 41 Euro w\u00e4ren es 11,7. Alles \u00fcber 38 Euro tr\u00e4gt bei fester Abnahme, darunter rechnet es sich nur \u00fcber Menge.",
+        "datum": vorTagen(2)
+      },
+      {
+        "fragerId": "akquise",
+        "agentId": "risiko",
+        "frage": "Darf ich Kanzlei Weber in den Ansprachen als Referenz nennen?",
+        "kontext": "Ich schreibe f\u00fcnf Erstansprachen und h\u00e4tte gern einen Beleg drin.",
+        "antwort": "Nicht ohne schriftliche Freigabe von Weber. Steuerberater unterliegen \u00a7 203 StGB, und schon die Nennung als Mandantschaft ist eine Offenlegung der Gesch\u00e4ftsbeziehung. Hol dir zwei S\u00e4tze per Mail, in denen Weber der namentlichen Nennung zustimmt \u2013 dann ist es sauber. Ohne die Mail w\u00fcrde ich es lassen.",
+        "datum": vorTagen(1)
+      }
     ]
   }
 }

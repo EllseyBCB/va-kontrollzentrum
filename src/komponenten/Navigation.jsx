@@ -5,15 +5,18 @@
 // dann der Betrieb (arbeiten lassen). Wer den Betrieb zuerst anklickt, findet
 // dort niemanden vor - genau so soll es sein.
 //
-// Die Besprechung steht am Ende, weil sie keine vierte Stufe ist, sondern quer
-// zu allem liegt: Sie setzt den Betrieb voraus, führt aber nirgendwohin weiter.
-// Man geht hin, wenn eine Frage mehrere Stellen betrifft.
+// Besprechung und Rückfrage stehen am Ende, weil sie keine weiteren Stufen
+// sind, sondern quer zu allem liegen: Beide setzen den Betrieb voraus, führen
+// aber nirgendwohin weiter. Man geht hin, wenn eine Frage mehr als eine Stelle
+// angeht - zur Besprechung, wenn ein Beschluss nötig ist, zur Rückfrage, wenn
+// eine Auskunft genügt.
 
 const REITER = [
   { id: 'konzept', name: 'Gründungsakte', unter: 'Die Grundlage' },
   { id: 'belegschaft', name: 'Belegschaft', unter: 'Acht Stellen' },
   { id: 'betrieb', name: 'Betrieb', unter: 'Aufträge' },
   { id: 'besprechung', name: 'Besprechung', unter: 'Gemeinsam' },
+  { id: 'rueckfrage', name: 'Rückfrage', unter: 'Kurz gefragt' },
 ]
 
 export default function Navigation({
@@ -22,6 +25,7 @@ export default function Navigation({
   konzeptFertig,
   scharfeAnzahl,
   besprechungenAnzahl,
+  rueckfragenAnzahl,
 }) {
   // Kleine Zahl rechts am Reiter - der Stand auf einen Blick.
   const marke = (id) => {
@@ -32,6 +36,11 @@ export default function Navigation({
     if (id === 'besprechung') {
       if (scharfeAnzahl < 2) return null
       return besprechungenAnzahl > 0 ? `${besprechungenAnzahl}` : null
+    }
+    // Auch die Rückfrage braucht zwei: eine, die fragt, eine, die antwortet.
+    if (id === 'rueckfrage') {
+      if (scharfeAnzahl < 2) return null
+      return rueckfragenAnzahl > 0 ? `${rueckfragenAnzahl}` : null
     }
     return konzeptFertig ? '✓' : null
   }

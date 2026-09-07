@@ -30,6 +30,11 @@ const SCHLUESSEL = 'va-kontrollzentrum.firma.v1'
 // die letzten zehn genügen, und der Browserspeicher ist klein.
 const BESPRECHUNGEN_MAX = 10
 
+// Wie viele Rückfragen aufgehoben werden. Mehr als Besprechungen, weil sie
+// klein sind und im Alltag öfter vorkommen - eine Rückfrage ist ein Zuruf,
+// keine Sitzung.
+const RUECKFRAGEN_MAX = 20
+
 // Wie viele fremde Meldungen eine Stelle bei ihrem Auftrag mitbekommt.
 // Bewusst knapp: Es ist Umgebungswissen, nicht die Arbeitsgrundlage - und jeder
 // Eintrag kostet bei jedem einzelnen Auftrag Geld.
@@ -59,6 +64,7 @@ function leereAkte() {
     konzeptDatum: null,
     positionen,
     besprechungen: [], // die letzten Runden, neueste zuletzt
+    rueckfragen: [], // die letzten Zurufe zwischen zwei Stellen, neueste zuletzt
     // Ob das hier die Beispielakte ist. Wird gespeichert, weil man es sonst
     // nach dem Neuladen nicht mehr wüsste - und dann hielte jemand irgendwann
     // die erfundene "Assistenz Mayer" für seine eigene Firma.
@@ -118,6 +124,29 @@ function inFormBringen(roh) {
       }))
       .filter((b) => b.beitraege.length > 0)
       .slice(-BESPRECHUNGEN_MAX)
+  }
+
+  // Rückfragen. Beide Beteiligten müssen es geben, sonst ist der Eintrag
+  // wertlos - er zeigte sonst eine Frage ohne Fragerin oder ohne Gefragte.
+  if (Array.isArray(roh.rueckfragen)) {
+    frisch.rueckfragen = roh.rueckfragen
+      .filter(
+        (r) =>
+          r &&
+          frisch.positionen[r.fragerId] &&
+          frisch.positionen[r.agentId] &&
+          typeof r.frage === 'string' &&
+          typeof r.antwort === 'string',
+      )
+      .slice(-RUECKFRAGEN_MAX)
+      .map((r) => ({
+        fragerId: r.fragerId,
+        agentId: r.agentId,
+        frage: r.frage,
+        kontext: typeof r.kontext === 'string' ? r.kontext : '',
+        antwort: r.antwort,
+        datum: typeof r.datum === 'string' ? r.datum : null,
+      }))
   }
 
   return frisch
@@ -327,6 +356,28 @@ export function useFirma() {
     setFirma((alt) => ({ ...alt, besprechungen: [] }))
   }, [])
 
+  // --- Rückfragen ----------------------------------------------------------
+  //
+  // Eine Rückfrage gehört zu zweien, deshalb steht sie wie die Besprechung
+  // neben den Positionen und nicht in einer davon.
+  //
+  // Sie geht bewusst NICHT in den Aushang. Der zeigt, woran im Unternehmen
+  // gearbeitet wird - eine Zwischenfrage ist kein Arbeitsergebnis, und wenn
+  // jeder Zuruf am schwarzen Brett landete, fände dort bald niemand mehr das
+  // Wesentliche.
+  const rueckfrageSichern = useCallback((eintrag) => {
+    setFirma((alt) => ({
+      ...alt,
+      rueckfragen: [...alt.rueckfragen, { ...eintrag, datum: new Date().toISOString() }].slice(
+        -RUECKFRAGEN_MAX,
+      ),
+    }))
+  }, [])
+
+  const rueckfragenLeeren = useCallback(() => {
+    setFirma((alt) => ({ ...alt, rueckfragen: [] }))
+  }, [])
+
   // --- Ganze Akte ----------------------------------------------------------
 
   const positionZuruecksetzen = useCallback((agentId) => {
@@ -467,6 +518,10 @@ export function useFirma() {
     besprechungen: firma.besprechungen,
     besprechungSichern,
     besprechungenLeeren,
+    // Rückfrage
+    rueckfragen: firma.rueckfragen,
+    rueckfrageSichern,
+    rueckfragenLeeren,
     // Akte
     akteLeeren,
     akteEinlesen,
@@ -479,6 +534,7 @@ export function useFirma() {
       !firma.konzept.trim() &&
       !firma.name.trim() &&
       firma.besprechungen.length === 0 &&
+      firma.rueckfragen.length === 0 &&
       AGENTEN.every((a) => {
         const pos = firma.positionen[a.id]
         return (

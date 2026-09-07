@@ -81,9 +81,10 @@ ohnehin nicht mitschicken.
 | `src/daten/agenten.js` | **Die acht Positionen und ihre Reihenfolge.** Einzige Stelle, an der die Abfolge festgelegt ist. Enthält beide Gesichter jeder Stelle: Beitrag zum Konzept und Dauerauftrag im Dienst. |
 | `src/daten/einrichtung.js` | **Die fünf Einrichtungsschritte und die 40 Fragen.** Der sichtbare Teil der Einrichtung – deshalb im Frontend, nicht auf dem Server. |
 | `src/daten/beispiel.js` | **Die Beispielfirma** zum Durchklicken. Reine Daten mit relativen Zeitangaben, wird erst beim Klick nachgeladen (eigener Chunk). |
-| `src/zustand/useFirma.js` | **Die Firmenakte.** Was bleibt: Idee, Konzept, Festlegungen, Dienstanweisungen, wer scharf ist. Schreibt bei jeder Änderung in den Browserspeicher. |
+| `src/zustand/useFirma.js` | **Die Firmenakte.** Was bleibt: Idee, Konzept, Festlegungen, Dienstanweisungen, wer scharf ist, dazu die Protokolle von Besprechungen und Rückfragen. Schreibt bei jeder Änderung in den Browserspeicher. |
 | `src/zustand/useDurchlauf.js` | **Die Ablaufsteuerung des Konzepts** – ruft die Fachleute nacheinander auf, gibt jeder die Vorergebnisse mit, verwaltet Stände, Abbruch und Wiederholung. |
 | `src/zustand/useBesprechung.js` | **Die Ablaufsteuerung einer Runde** – dasselbe Verfahren, aber mit den Stellen, die im Dienst sind, und jede an ihre Dienstanweisung gebunden. |
+| `src/komponenten/Rueckfrage.jsx` | Der kurze Dienstweg: eine Frage, eine Kollegin, eine Auskunft. Braucht keinen eigenen Haken – ein Aufruf genügt `useSchreiber`. |
 | `src/zustand/useSchreiber.js` | Kleiner Helfer für jeden gestreamten Text (Vorschlag, Anweisung, Auftrag): Text, läuft, Fehler, Abbruch. |
 | `src/dienste/api.js` | Einziger Draht zur API – und die einzige Datei, die weiß, ob sie lokal oder beim Worker liegt. Liest den Datenstrom Stück für Stück. |
 | `src/dienste/dateien.js` | Alles, was der Browser als Datei herausgibt oder einliest. |
@@ -92,9 +93,9 @@ ohnehin nicht mitschicken.
 | `src/stile/global.css` | Layout und Aussehen der Bausteine. |
 | `server/index.js` | Lokaler API-Server (Node). Hält den Schlüssel aus der `.env` und streamt die Aufrufe. |
 | `worker/index.js` | Dieselben Endpunkte als Cloudflare-Worker – die API der veröffentlichten Fassung. Hält bewusst keinen Schlüssel. |
-| `server/agenten/anfragen.js` | **Was gefragt wird**, unabhängig davon, wo es läuft: Prüfungen und fertiger Auftrag ans Modell. Von beiden Fassungen benutzt. |
+| `server/agenten/anfragen.js` | **Was gefragt wird**, unabhängig davon, wo es läuft: Prüfungen und fertiger Auftrag ans Modell, für jeden Weg einer. Von beiden Fassungen benutzt; die Liste der Wege wird hier abgeleitet, nicht von Hand gepflegt. |
 | `server/agenten/prompts.js` | **Die acht Rollen** und der gemeinsame Ton. Liegt auf dem Server, damit sie nicht im Browser lesbar sind. |
-| `server/agenten/dienst.js` | Die Prompts für Vorschlag, Dienstanweisung, Betrieb und Besprechung – dieselben Rollen, andere Aufgabe. Hier steht auch der Aushang. |
+| `server/agenten/dienst.js` | Die Prompts für Vorschlag, Dienstanweisung, Betrieb, Besprechung und Rückfrage – dieselben Rollen, andere Aufgabe. Hier steht auch der Aushang. |
 | `wrangler.toml` | Einstellungen des Workers: Name, Modell, erlaubte Ursprünge. |
 | `public/` | Dateien, die unverändert ausgeliefert werden (Logo, Favicon). |
 | `docs/` | Diese Dokumentation. |
@@ -188,8 +189,9 @@ und „Akte einlesen" – das ist der Weg auf einen anderen Rechner.
 ## Wie die Stellen voneinander erfahren
 
 Eine Stelle, die nur ihr eigenes Protokoll kennt, ist keine Kollegin, sondern
-ein besserer Textbaustein. Es gibt zwei Wege, und sie kosten sehr
-unterschiedlich viel.
+ein besserer Textbaustein. Es gibt drei Wege dagegen, und sie kosten sehr
+unterschiedlich viel: einer kommt ungefragt mit, einer fragt gezielt nach,
+einer setzt das halbe Haus an einen Tisch.
 
 ### Der Aushang – passiv, bei jedem Auftrag
 
@@ -228,6 +230,65 @@ der Gründerin entgegen.
 
 Der Aushang steht auch am Bildschirm, aufklappbar. Was ungefragt in einen Aufruf
 hineingeht, soll man nachlesen können - sonst ist es Zauberei.
+
+### Die Rückfrage – gezielt, ein Aufruf
+
+```
+Die Akquise stockt mitten in der Arbeit
+      │
+      ▼
+   fragt genau eine Kollegin
+      │
+      ▼
+   Risiko antwortet in drei Sätzen
+      │
+      └── gebunden an die eigene Dienstanweisung
+```
+
+Zwischen Aushang und Besprechung fehlte die Mitte. Der Aushang kommt ungefragt
+und sagt nichts über das, was man gerade wissen muss; die Besprechung kostet
+einen Aufruf je Teilnehmerin und endet mit einem Beschluss. Wer nur wissen will,
+wo die Preisuntergrenze liegt, hatte bis dahin die Wahl zwischen gar nicht
+fragen und den ganzen Tisch einberufen.
+
+Vier Entscheidungen stecken darin:
+
+**Genau eine Kollegin, nicht mehrere.** Sobald zwei antworten dürfen, entsteht
+wieder eine Runde – mit Widerspruch, der aufgelöst werden will, und einem
+Beschluss, den jemand schreiben muss. Genau dafür gibt es die Besprechung. Die
+Rückfrage bleibt ein Zuruf über den Flur, und ein Zuruf geht an eine Person.
+
+**Ein Satz Zusammenhang statt des ganzen Auftrags.** Die Gefragte erfährt, um
+welche Firma es geht, wer fragt, was gefragt wird und – wenn die Fragerin ihn
+angibt – woran diese gerade arbeitet. Nicht mit geht der Auftrag, an dem die
+Fragerin sitzt, ihr Protokoll und der Aushang. Es ist eine Zwischenfrage, kein
+zweiter Auftrag: Die Gefragte soll die Frage beantworten, nicht die Arbeit der
+Kollegin nachvollziehen. Und jedes Wort, das mitgeht, wird bei jeder einzelnen
+Rückfrage bezahlt. Eine Auskunft, die so viel Anlauf braucht wie ein Auftrag,
+ist keine Auskunft mehr – dann ist der Auftrag der richtige Weg.
+
+**Die Dienstanweisung bindet unverändert weiter.** Eine Zusage, die im Betrieb
+eine Freigabe bräuchte, wird nicht dadurch harmlos, dass sie im Vorbeigehen
+gemacht wurde – im Gegenteil, so entstehen gerade die Zusagen, an die sich
+hinterher niemand erinnert. Was die Gefragte laut ihrer Anweisung nicht darf,
+sagt sie auch hier nicht zu; sie nennt dann die Stelle der Anweisung, die
+dagegensteht. Fällt die Frage gar nicht in ihr Fach, sagt sie das und nennt,
+wer sie beantworten kann.
+
+Dazu die Regel, an der die Knappheit hängt: Was sie nicht sicher weiß, sagt
+sie auch so, statt eine Zahl zu erfinden. Die Kollegin rechnet mit dem weiter,
+was sie hört – eine ausgedachte Zahl wandert von hier aus in ein Angebot,
+in eine Rechnung, zu einer Kundin. Die Obergrenze steht deshalb als Zahl im
+Prompt und nicht als „kurz": sechzig Wörter.
+
+**Rückfragen gehen nicht in den Aushang.** Der zeigt, woran im Unternehmen
+gearbeitet wird. Eine Rückfrage ist aber eine einmalige gezielte Frage zwischen
+zwei Stellen, kein Dauerwissen fürs ganze Haus – und landete jeder Zuruf am
+schwarzen Brett, fände dort bald niemand mehr das Wesentliche. Aus demselben
+Grund verdrängt sie auch nicht die letzte Arbeitsmeldung einer Stelle: Sie wird
+neben den Positionen abgelegt und nicht in deren Protokoll, also kann sie gar
+nicht erst in den Aushang geraten. Wer sie nachlesen will, findet sie im
+Bereich „Rückfrage" unter „Schon gefragt".
 
 ### Die Besprechung – aktiv, ein Aufruf je Teilnehmerin
 
@@ -335,6 +396,8 @@ Systemschrift zurück, wenn kein Netz da ist.
    damit die Stellen nicht nur mit dem arbeiten, was man ihnen erzählt. Das ist
    jetzt der größte Hebel: Die Stellen reden inzwischen miteinander, aber alles,
    worüber sie reden, muss ihnen noch jemand eintippen.
-2. Eine Stelle mitten im Auftrag bei einer Kollegin rückfragen lassen - heute
-   geht das nur über eine ganze Besprechung, und die ist für eine einzelne Zahl
-   zu schwer.
+2. Die Rückfrage von der Stelle selbst auslösen lassen. Es gibt sie, aber
+   angestoßen wird sie von der Gründerin: Sie wählt am Bildschirm, wer wen
+   fragt. Der nächste Schritt wäre, dass eine Stelle mitten im Auftrag von
+   sich aus stockt, nachfragt und dann weiterschreibt - dann läuft ein Auftrag
+   zweistufig.

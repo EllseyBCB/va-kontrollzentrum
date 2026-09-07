@@ -18,6 +18,7 @@ import Belegschaft from './komponenten/Belegschaft.jsx'
 import Einrichtung from './komponenten/Einrichtung.jsx'
 import Betrieb from './komponenten/Betrieb.jsx'
 import Besprechung from './komponenten/Besprechung.jsx'
+import Rueckfrage from './komponenten/Rueckfrage.jsx'
 import Beispielband from './komponenten/Beispielband.jsx'
 import { AGENTEN, agentNach } from './daten/agenten.js'
 import { useFirma } from './zustand/useFirma.js'
@@ -133,6 +134,7 @@ export default function App() {
         konzeptFertig={firma.hatKonzept}
         scharfeAnzahl={firma.scharfeAnzahl}
         besprechungenAnzahl={firma.besprechungen.length}
+        rueckfragenAnzahl={firma.rueckfragen.length}
       />
 
       {/* Steht über allen Bereichen: das Angebot, sich das Beispiel anzusehen -
@@ -212,6 +214,19 @@ export default function App() {
             <Besprechung
               firma={firma}
               sitzung={sitzung}
+              zurBelegschaft={() => setReiter('belegschaft')}
+              serverBereit={serverBereit}
+              apiHinweis={apiHinweis}
+            />
+          </>
+        )}
+
+        {/* ---------------------------------------------------- Rückfrage */}
+        {reiter === 'rueckfrage' && (
+          <>
+            {hinweis}
+            <Rueckfrage
+              firma={firma}
               zurBelegschaft={() => setReiter('belegschaft')}
               serverBereit={serverBereit}
               apiHinweis={apiHinweis}

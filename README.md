@@ -74,7 +74,7 @@ nicht scharf gestellt werden.
 ## Die Stellen reden miteinander
 
 Acht Stellen, von denen keine weiß, was die anderen tun, sind kein Unternehmen,
-sondern acht Einzelkämpfer. Dagegen gibt es zwei Mittel:
+sondern acht Einzelkämpfer. Dagegen gibt es drei Mittel:
 
 **Der Aushang.** Bei jedem Auftrag geht mit, woran die anderen zuletzt
 gearbeitet haben – je Stelle im Dienst ihre letzte Meldung, dazu der Beschluss
@@ -99,6 +99,15 @@ Tisch nicht.
 
 Eine Besprechung ist ein Aufruf je Teilnehmerin. Vier gut gewählte Stellen sagen
 mehr als acht, von denen die Hälfte nichts beizutragen hat.
+
+**Die Rückfrage.** Der kurze Dienstweg daneben: eine Stelle fragt genau eine
+Kollegin etwas und bekommt eine knappe Auskunft – für alles, wofür eine
+Besprechung zu schwer ist, wenn jemand mitten in der Arbeit eine Zahl braucht
+und dann weitermacht. Die Gefragte bleibt dabei an ihre Dienstanweisung
+gebunden: Eine Zusage, die im Betrieb eine Freigabe bräuchte, wird nicht dadurch
+harmlos, dass sie im Vorbeigehen gemacht wurde. Und was sie nicht sicher weiß,
+sagt sie auch so, statt eine Zahl zu erfinden – die Kollegin rechnet ja damit
+weiter. Ein Aufruf, höchstens sechzig Wörter Antwort.
 
 ## Scharf stellen
 
