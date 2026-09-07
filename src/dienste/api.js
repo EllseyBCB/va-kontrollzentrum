@@ -219,3 +219,35 @@ export function sprichInBesprechung({
     signal,
   )
 }
+
+// --- 5. Rückfrage -----------------------------------------------------------
+
+/**
+ * Eine Stelle stellt einer Kollegin eine kurze Frage und bekommt eine knappe
+ * Auskunft - ein Aufruf, keine Runde.
+ *
+ * Achtung bei den Kennungen: agentId ist die GEFRAGTE, die antwortet. Ihre
+ * Dienstanweisung geht mit, weil sie gebunden bleibt. Wer gefragt hat, steht
+ * in fragerId; Name und Stelle dazu schlägt der Server nach.
+ *
+ * @param {string} p.fragerId  Kennung der fragenden Stelle
+ * @param {string} p.frage     die Frage
+ * @param {string} [p.kontext] ein Satz, woran die fragende Stelle gerade arbeitet
+ */
+export function stelleRueckfrage({
+  agentId,
+  fragerId,
+  firma,
+  dienstanweisung,
+  frage,
+  kontext,
+  beiText,
+  signal,
+}) {
+  return stroem(
+    'rueckfrage',
+    { agentId, fragerId, firma, dienstanweisung, frage, kontext },
+    beiText,
+    signal,
+  )
+}

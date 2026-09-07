@@ -23,6 +23,8 @@ import {
   betriebNachricht,
   besprechungSystem,
   besprechungNachricht,
+  rueckfrageSystem,
+  rueckfrageNachricht,
 } from './dienst.js'
 // Die Stammdaten der Positionen liegen im Frontend, weil sie dort angezeigt
 // werden. Hier wird dieselbe Datei gelesen - eine reine Datendatei ohne React.
@@ -174,6 +176,54 @@ const BAUER = {
       }),
       // Wer den Beschluss schreibt, braucht mehr Platz als eine Wortmeldung.
       maxTokens: vorsitz ? 4000 : 2000,
+    }
+  },
+
+  // 6. Die Rückfrage: eine Stelle fragt mitten in der Arbeit eine Kollegin.
+  //
+  // Die Kennungen sind hier vertauscht zur Leseerwartung, deshalb ausdrücklich:
+  // agentId ist die GEFRAGTE. Sie antwortet, also gehört ihr der Prompt, ihre
+  // Dienstanweisung bindet, und nur sie muss in den Stammdaten stehen - genau
+  // das prüft baueAnfrage weiter unten für alle Wege gemeinsam. Wer gefragt
+  // hat, steht in fragerId und ist bloß Absender.
+  //
+  // Warum das nicht einfach eine Besprechung mit zwei Teilnehmerinnen ist: Eine
+  // Besprechung ist eine Runde mit Beschluss und kostet je Teilnehmerin einen
+  // Aufruf. Wer nur eine Zahl braucht, soll dafür nicht den ganzen Tisch
+  // einberufen.
+  rueckfrage({ agentId, fragerId, firma = {}, dienstanweisung = '', frage = '', kontext = '' }) {
+    if (typeof dienstanweisung !== 'string' || dienstanweisung.trim().length < 50) {
+      return nein(400, 'Diese Stelle hat keine Dienstanweisung - sie darf noch nicht antworten.')
+    }
+    if (typeof frage !== 'string' || frage.trim().length < 5) {
+      return nein(400, 'Die Rückfrage ist zu kurz.')
+    }
+
+    // Auch die fragende Stelle wird über die Stammdaten aufgelöst, nicht aus
+    // dem Browser übernommen. Sonst stünde im Prompt ein erfundener Name, und
+    // die Gefragte antwortete einer Kollegin, die es nicht gibt.
+    const frager = AGENTEN.find((a) => a.id === fragerId)
+    if (!frager) {
+      return nein(400, `Unbekannte fragende Fachkraft: ${fragerId}`)
+    }
+    if (fragerId === agentId) {
+      return nein(400, 'Eine Stelle kann sich nicht selbst befragen.')
+    }
+
+    return {
+      kennung: `rueckfrage/${agentId}`,
+      system: rueckfrageSystem(agentId, stelleVon(agentId), dienstanweisung),
+      nachricht: rueckfrageNachricht({
+        firma,
+        frage,
+        kontext,
+        frager: { name: frager.name, stelle: frager.stelle },
+      }),
+      // Eine Rückfrage ist eine kurze Auskunft, keine Ausarbeitung: eine Zahl,
+      // ein Satz Einordnung, fertig. Die enge Grenze hält sie kurz - wer eine
+      // ausgearbeitete Antwort will, gibt einen Auftrag oder beruft eine
+      // Besprechung ein.
+      maxTokens: 1500,
     }
   },
 }

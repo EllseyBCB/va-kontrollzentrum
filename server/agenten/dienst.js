@@ -5,6 +5,7 @@
 //   2. Dienstanweisung  - aus den fünf Antworten wird ihr Arbeitsvertrag
 //   3. Betrieb          - die scharf gestellte Stelle erledigt einen Auftrag
 //   4. Besprechung      - mehrere Stellen reden über ein Thema, reihum
+//   5. Rückfrage        - eine Stelle fragt mitten in der Arbeit eine Kollegin
 //
 // Die Rollen kommen aus prompts.js - es ist dieselbe Person, die im Konzept den
 // Markt geprüft hat und die ihn später beobachtet. Nur die Aufgabe wechselt.
@@ -356,6 +357,89 @@ export function besprechungNachricht({ firma, thema, tisch = [], beitraege = [],
   text += vorsitz
     ? `Du hast das letzte Wort. Sag deins und schreib dann den Beschluss.`
     : `Du bist dran. Sag deins.`
+
+  return text
+}
+
+// --- 5. Die Rückfrage -------------------------------------------------------
+//
+// Der Unterschied zum Betrieb ist der Umfang, nicht die Strenge. Im Betrieb
+// bekommt eine Stelle einen Auftrag und arbeitet ihn aus. Hier steht eine
+// Kollegin mitten in ihrer eigenen Arbeit und braucht eine einzige Auskunft,
+// um weitermachen zu können - eine Zahl, ein Ja, ein Nein.
+//
+// Warum das ein eigener Weg ist und keine Besprechung mit zwei Teilnehmerinnen:
+// Eine Besprechung ist eine Runde mit Beschluss und kostet je Teilnehmerin
+// einen Aufruf. Wer nur wissen will, wo die Preisuntergrenze liegt, soll dafür
+// nicht den ganzen Tisch einberufen.
+//
+// Gebunden bleibt die Gefragte trotzdem vollständig. Eine Zusage, die im
+// Betrieb eine Freigabe bräuchte, wird nicht dadurch harmlos, dass sie im
+// Vorbeigehen gemacht wurde - so entstehen gerade die Zusagen, an die sich
+// hinterher niemand erinnert.
+export function rueckfrageSystem(agentId, stelle, dienstanweisung) {
+  return `${rolleVon(agentId)}
+
+Du bist in diesem Unternehmen als "${kurz(stelle, 120)}" im Dienst. Eine Kollegin
+steht gerade mitten in ihrer Arbeit und braucht eine Auskunft von dir. Deine
+Dienstanweisung gilt dabei unverändert - sie ist bindend, auch für einen Satz
+zwischen Tür und Angel.
+
+--- Deine Dienstanweisung ---
+${kurz(dienstanweisung)}
+--- Ende der Dienstanweisung ---
+
+${TON}
+
+Diesmal antwortest du nicht der Gründerin, sondern der Kollegin. Sie arbeitet in
+derselben Firma und kennt das Geschäft - du musst ihr nichts erklären, was im
+Konzept steht.
+
+So antwortest du:
+- Kurz. Das ist ein Zuruf über den Flur, kein Gutachten. Höchstens 60 Wörter -
+  und wenn die Frage in einem Satz zu beantworten ist, ist ein Satz die
+  richtige Antwort.
+- Was du nicht sicher weißt, sagst du auch so: "das müsste ich prüfen", "die
+  Zahl habe ich nicht". Erfinde keine. Die Kollegin rechnet mit dem weiter, was
+  du sagst - eine ausgedachte Zahl wandert von hier aus in ein Angebot, in eine
+  Rechnung, zu einer Kundin.
+- Was deine Anweisung dir verbietet, sagst du auch hier nicht zu. Nenn dann in
+  einem Halbsatz die Stelle deiner Anweisung, die dagegensteht.
+- Fällt die Frage gar nicht in deine Zuständigkeit, sag das und nenn, wer im
+  Unternehmen sie beantworten kann. Rate nicht aus Höflichkeit.
+
+Form: reiner Fließtext, kein Markdown, keine Überschrift, keine Aufzählung.
+Keine Anrede, keine Grußformel. Wiederhol die Frage nicht - die Kollegin weiß,
+was sie gefragt hat. Fang mit der Antwort an.`
+}
+
+// Bewusst schmal gehalten. Mit hinein geht nur: um welche Firma es geht, wer
+// fragt, die Frage - und wenn es einen gibt, der eine Satz, woran die Kollegin
+// gerade arbeitet.
+//
+// Nicht mit hinein gehen der Auftrag der fragenden Stelle, ihr Protokoll und
+// der Aushang. Zwei Gründe: Es ist eine Zwischenfrage, kein zweiter Auftrag -
+// die Gefragte soll die Frage beantworten und nicht die Arbeit der Kollegin
+// nachvollziehen. Und jedes Wort, das mitgeht, kostet bei jeder einzelnen
+// Rückfrage Geld. Eine Auskunft, die so viel Anlauf braucht wie ein Auftrag,
+// ist keine Auskunft mehr - dann ist der Auftrag der richtige Weg.
+export function rueckfrageNachricht({ firma, frage, kontext = '', frager = {} }) {
+  let text = `${firmenkontext(firma)}\n\n---\n\n`
+
+  const wer = `${kurz(frager.name, 80)} (${kurz(frager.stelle, 120)})`
+
+  // Erst der Zusammenhang, dann die Frage: Wer weiß, woran die Kollegin sitzt,
+  // beantwortet dieselbe Frage anders - und meistens brauchbarer. Fehlt der
+  // Kontext, fällt der Teil ganz weg statt als leere Zeile mitzureisen.
+  if (kontext?.trim()) {
+    text += `${wer} arbeitet gerade an Folgendem:\n${kurz(kontext, 600)}\n\n`
+    text += `Dabei fragt sie dich:\n\n`
+  } else {
+    text += `${wer} fragt dich:\n\n`
+  }
+
+  text += `"""\n${kurz(frage, 2000)}\n"""\n\n`
+  text += `Antworte ihr - knapp.`
 
   return text
 }
